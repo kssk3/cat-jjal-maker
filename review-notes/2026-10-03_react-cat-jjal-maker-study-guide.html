@@ -1,0 +1,3405 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>React 짤방 학습 가이드</title>
+  <link rel="stylesheet"
+    href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" />
+  <style>
+    /* 레이아웃: 넓은 화면은 1600x900 무대(왼쪽 코드 · 오른쪽 설명), 좁은 화면은 코드 → 설명 세로 스크롤 */
+    /* 색: 1002-js-todo발표자료.html의 색상표 + 다크 모드 값 */
+    :root {
+      --surface: #ffffff;
+      --on-accent: #ffffff;
+      --on-accent-soft: #e8f3ff;
+      --syn-fn: #7b3fe4;
+      --syn-tag: #0b7285;
+      --grey-50: #f9fafb;
+      --grey-100: #f2f4f6;
+      --grey-200: #e5e8eb;
+      --grey-300: #d1d6db;
+      --grey-400: #b0b8c1;
+      --grey-600: #6b7684;
+      --grey-700: #4e5968;
+      --grey-800: #333d4b;
+      --grey-900: #191f28;
+      --blue-50: #e8f3ff;
+      --blue-100: #c9e2ff;
+      --blue-500: #3182f6;
+      --blue-600: #2272eb;
+      --blue-700: #1b64da;
+      --green-50: #f0faf6;
+      --green-700: #027648;
+      --red-50: #ffeeee;
+      --red-700: #d22030;
+      --sans: "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif;
+      --mono: "JetBrains Mono", "D2Coding", Menlo, Consolas, "Pretendard", monospace;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --surface: #1a1f27;
+        --on-accent: #ffffff;
+        --on-accent-soft: #dbe9ff;
+        --syn-fn: #b794ff;
+        --syn-tag: #4fc3d6;
+        --grey-50: #151a21;
+        --grey-100: #0f1318;
+        --grey-200: #2a313b;
+        --grey-300: #3a424e;
+        --grey-400: #5e6875;
+        --grey-600: #8d97a4;
+        --grey-700: #b0b8c2;
+        --grey-800: #d3d8de;
+        --grey-900: #f2f4f6;
+        --blue-50: #16263d;
+        --blue-100: #1f3b60;
+        --blue-500: #4c94f8;
+        --blue-600: #2f7ae5;
+        --blue-700: #7db3ff;
+        --green-50: #102a20;
+        --green-700: #5fd6a8;
+        --red-50: #321719;
+        --red-700: #ff8089;
+        color-scheme: dark;
+      }
+    }
+
+    :root[data-theme="dark"] {
+      --surface: #1a1f27;
+      --on-accent: #ffffff;
+      --on-accent-soft: #dbe9ff;
+      --syn-fn: #b794ff;
+      --syn-tag: #4fc3d6;
+      --grey-50: #151a21;
+      --grey-100: #0f1318;
+      --grey-200: #2a313b;
+      --grey-300: #3a424e;
+      --grey-400: #5e6875;
+      --grey-600: #8d97a4;
+      --grey-700: #b0b8c2;
+      --grey-800: #d3d8de;
+      --grey-900: #f2f4f6;
+      --blue-50: #16263d;
+      --blue-100: #1f3b60;
+      --blue-500: #4c94f8;
+      --blue-600: #2f7ae5;
+      --blue-700: #7db3ff;
+      --green-50: #102a20;
+      --green-700: #5fd6a8;
+      --red-50: #321719;
+      --red-700: #ff8089;
+      color-scheme: dark;
+    }
+
+    * { box-sizing: border-box; }
+
+    html,
+    body {
+      margin: 0;
+      height: 100%;
+      overflow: hidden;
+      background: var(--grey-100);
+      color: var(--grey-900);
+      font-family: var(--sans);
+    }
+
+    /* 1600x900 무대를 화면 크기에 맞춰 확대/축소 */
+    #stage {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 1600px;
+      height: 900px;
+      background: var(--grey-100);
+      transform-origin: center;
+      overflow: hidden;
+    }
+
+    .press { transition: transform .1s ease, background-color .2s ease; }
+    .press:active { transform: scale(.96); }
+
+    /* 상단 바 */
+    .topbar {
+      position: absolute;
+      top: 26px;
+      left: 48px;
+      right: 48px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .topbar .deck {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--grey-800);
+      white-space: nowrap;
+    }
+
+    .topbar .deck i {
+      width: 26px;
+      height: 26px;
+      border-radius: 8px;
+      background: var(--blue-500);
+      display: grid;
+      place-items: center;
+      color: var(--on-accent);
+      font-style: normal;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .topics { display: flex; gap: 6px; }
+
+    .topics button {
+      font: inherit;
+      border: 0;
+      font-size: 15px;
+      font-weight: 600;
+      padding: 8px 14px;
+      border-radius: 999px;
+      color: var(--grey-700);
+      background: var(--surface);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background-color .2s ease, color .2s ease;
+    }
+
+    .topics button:hover { background: var(--blue-50); }
+
+    .topics button.on {
+      background: var(--blue-600);
+      color: var(--on-accent);
+      font-weight: 700;
+    }
+
+    /* 하단 바 */
+    .footer {
+      position: absolute;
+      bottom: 18px;
+      left: 48px;
+      right: 48px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      font-size: 15px;
+      color: var(--grey-700);
+    }
+
+    .track {
+      flex: 0 0 320px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--grey-200);
+      overflow: hidden;
+    }
+
+    .track .bar {
+      height: 100%;
+      width: 0;
+      border-radius: 999px;
+      background: var(--blue-500);
+      transition: width .5s ease;
+    }
+
+    .footer .nav { display: flex; align-items: center; gap: 10px; }
+
+    .footer button {
+      font: inherit;
+      font-size: 22px;
+      line-height: 1;
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      border: 0;
+      background: var(--surface);
+      color: var(--grey-800);
+      cursor: pointer;
+    }
+
+    .footer button:hover { background: var(--grey-50); }
+
+    .footer .count {
+      font-weight: 700;
+      color: var(--grey-800);
+      min-width: 64px;
+      text-align: center;
+      font-size: 16px;
+    }
+
+    .footer .count b { color: var(--blue-700); }
+
+    /* 슬라이드 공통 */
+    .slide {
+      position: absolute;
+      top: 86px;
+      bottom: 74px;
+      left: 48px;
+      right: 48px;
+      display: none;
+    }
+
+    .slide.active {
+      display: grid;
+      animation: slide-up .3s ease-out;
+    }
+
+    @keyframes slide-up {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .slide.split {
+      grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr);
+      gap: 20px;
+    }
+
+    .left,
+    .right {
+      background: var(--surface);
+      border-radius: 32px;
+      min-width: 0;
+      min-height: 0;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .left { padding: 28px; }
+
+    .right {
+      padding: 40px 48px;
+      justify-content: safe center;
+      overflow-y: auto;
+      scrollbar-width: none;
+    }
+
+    .right::-webkit-scrollbar { display: none; }
+
+    /* 왼쪽: 코드 카드 */
+    figure.code {
+      margin: 0;
+      max-height: 100%;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      background: var(--grey-50);
+      border-radius: 22px;
+      overflow: hidden;
+    }
+
+    .chrome {
+      flex: 0 0 auto;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 0 22px;
+      border-bottom: 1px solid var(--grey-100);
+    }
+
+    .dots { display: flex; gap: 7px; }
+
+    .dots i {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      display: block;
+      background: var(--grey-300);
+    }
+
+    .fname {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--grey-700);
+      background: var(--surface);
+      padding: 5px 12px;
+      border-radius: 999px;
+    }
+
+    figure.code pre {
+      margin: 0;
+      padding: 20px 0 24px;
+      overflow: hidden;
+      min-height: 0;
+      font-family: var(--mono);
+      font-size: 21px;
+      line-height: 1.65;
+      color: var(--grey-800);
+    }
+
+    pre code { display: inline-block; min-width: 100%; }
+
+    .ln { display: block; padding: 0 28px 0 0; white-space: pre; }
+
+    .ln .no {
+      display: inline-block;
+      width: 3.2em;
+      padding-right: 1.1em;
+      text-align: right;
+      color: var(--grey-400);
+      user-select: none;
+    }
+
+    .ln.hl {
+      background: var(--blue-50);
+      box-shadow: inset 5px 0 0 var(--blue-500);
+    }
+
+    .ln.hl .no { color: var(--blue-700); font-weight: 600; }
+
+    .t-k { color: var(--blue-700); font-weight: 600; }
+    .t-s { color: var(--green-700); }
+    .t-n { color: var(--red-700); }
+    .t-f { color: var(--syn-fn); }
+    .t-c { color: var(--grey-600); }
+    .t-t { color: var(--syn-tag); font-weight: 600; }
+
+    /* 오른쪽: 설명 */
+    .kicker {
+      align-self: flex-start;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--blue-700);
+      background: var(--blue-50);
+      padding: 7px 14px;
+      border-radius: 999px;
+      margin-bottom: 16px;
+    }
+
+    h2 {
+      font-size: 38px;
+      line-height: 1.28;
+      margin: 0 0 14px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--grey-900);
+    }
+
+    h2 em { font-style: normal; color: var(--blue-600); }
+
+    .lead {
+      font-size: 21px;
+      line-height: 1.6;
+      color: var(--grey-700);
+      margin: 0 0 22px;
+      letter-spacing: -0.01em;
+    }
+
+    .lead b { color: var(--grey-900); }
+
+    ul.pts {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      font-size: 19px;
+      line-height: 1.55;
+      color: var(--grey-800);
+    }
+
+    ul.pts li { position: relative; padding-left: 34px; margin: 0 0 11px; }
+
+    ul.pts li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: .2em;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--blue-500) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 12.5l4 4 8-9'/%3E%3C/svg%3E") center / 14px no-repeat;
+    }
+
+    code.i {
+      font-family: var(--mono);
+      font-size: .86em;
+      background: var(--grey-100);
+      padding: 2px 7px;
+      border-radius: 8px;
+      color: var(--grey-900);
+    }
+
+    .callout {
+      margin-top: 20px;
+      background: var(--blue-50);
+      padding: 14px 20px;
+      font-size: 18px;
+      line-height: 1.5;
+      color: var(--blue-700);
+      border-radius: 18px;
+      font-weight: 700;
+    }
+
+    .callout+.callout { margin-top: 10px; }
+    .callout code.i { background: var(--surface); }
+    .callout.warn { background: var(--red-50); color: var(--red-700); }
+    .callout.biz { background: var(--green-50); color: var(--green-700); }
+
+    .gap { height: 20px; }
+
+    /* 표 */
+    table.rule { width: 100%; border-collapse: collapse; font-size: 18px; }
+
+    table.rule th {
+      text-align: left;
+      font-size: 15px;
+      color: var(--grey-600);
+      font-weight: 700;
+      padding: 0 14px 9px;
+    }
+
+    table.rule td {
+      padding: 10px 14px;
+      border-top: 1px solid var(--grey-100);
+      color: var(--grey-800);
+    }
+
+    table.rule td:first-child {
+      font-family: var(--mono);
+      font-size: 16px;
+      color: var(--grey-900);
+      white-space: nowrap;
+    }
+
+    table.rule td b { color: var(--blue-700); }
+
+    /* 가로 체인 */
+    .hchain { display: flex; align-items: stretch; gap: 8px; }
+
+    .hchain .box {
+      flex: 1;
+      background: var(--grey-100);
+      border-radius: 18px;
+      padding: 13px 10px;
+      text-align: center;
+    }
+
+    .hchain .box:first-child { background: var(--blue-50); }
+
+    .hchain .box b {
+      display: block;
+      font-size: 17px;
+      color: var(--grey-900);
+      margin-bottom: 6px;
+    }
+
+    .hchain .box:first-child b { color: var(--blue-700); }
+
+    .hchain .box code {
+      font-family: var(--mono);
+      font-size: 14px;
+      color: var(--grey-800);
+    }
+
+    .hchain .arr {
+      align-self: center;
+      font-size: 22px;
+      color: var(--grey-400);
+      font-weight: 700;
+    }
+
+    /* 단계 목록 */
+    ol.steps { list-style: none; margin: 0; padding: 0; counter-reset: s; }
+
+    ol.steps li {
+      counter-increment: s;
+      position: relative;
+      padding: 0 0 0 46px;
+      margin: 0 0 12px;
+      font-size: 19px;
+      line-height: 1.5;
+      color: var(--grey-800);
+    }
+
+    ol.steps li::before {
+      content: counter(s);
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: var(--blue-600);
+      color: var(--on-accent);
+      font-size: 15px;
+      font-weight: 800;
+      display: grid;
+      place-items: center;
+    }
+
+    ol.steps li .chip {
+      display: inline-block;
+      margin-left: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: var(--grey-100);
+      color: var(--grey-700);
+      vertical-align: 2px;
+    }
+
+    .two {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 4px 0 18px;
+    }
+
+    .two div {
+      background: var(--grey-100);
+      border-radius: 18px;
+      padding: 13px 17px;
+      font-size: 17px;
+      line-height: 1.5;
+      color: var(--grey-700);
+    }
+
+    .two div b { display: block; color: var(--grey-900); margin-bottom: 4px; }
+
+    /* 변환 흐름 */
+    .flow { display: flex; align-items: center; gap: 8px; margin-bottom: 18px; }
+
+    .flow .box {
+      background: var(--blue-50);
+      border-radius: 16px;
+      padding: 11px 16px;
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--blue-700);
+      text-align: center;
+    }
+
+    .flow .box.mid { background: var(--grey-100); color: var(--grey-900); }
+
+    .flow .box small {
+      display: block;
+      font-family: var(--mono);
+      font-weight: 400;
+      font-size: 13px;
+      color: var(--grey-800);
+      margin-top: 4px;
+    }
+
+    .flow .arr {
+      flex: 1;
+      text-align: center;
+      font-family: var(--mono);
+      font-size: 14px;
+      color: var(--blue-700);
+      font-weight: 600;
+    }
+
+    .flow .arr::after {
+      content: "";
+      display: block;
+      height: 3px;
+      border-radius: 3px;
+      background: var(--blue-500);
+      margin-top: 5px;
+    }
+
+    /* 좋은 예 / 나쁜 예 */
+    .rules { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px; }
+
+    .rules div { border-radius: 18px; padding: 13px 17px; font-size: 17px; line-height: 1.6; }
+    .rules .ok { background: var(--green-50); color: var(--green-700); }
+    .rules .bad { background: var(--red-50); color: var(--red-700); }
+    .rules b { display: block; font-size: 17px; margin-bottom: 4px; }
+    .rules code { font-family: var(--mono); font-size: 15px; }
+
+    /* 컴포넌트 트리 */
+    .tree { margin-bottom: 4px; }
+
+    .tree .root {
+      background: var(--blue-600);
+      color: var(--on-accent);
+      border-radius: 18px;
+      padding: 11px 18px;
+      text-align: center;
+    }
+
+    .tree .root b { display: block; font-size: 19px; font-family: var(--mono); }
+    .tree .root span { font-family: var(--mono); font-size: 14px; opacity: .92; }
+
+    .tree .links {
+      display: flex;
+      justify-content: center;
+      gap: 34px;
+      padding: 9px 0;
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .tree .links .down { color: var(--blue-700); }
+    .tree .links .up { color: var(--red-700); }
+    .tree .links.plain { color: var(--grey-400); font-size: 20px; padding: 4px 0; }
+
+    .tree .kids { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+
+    .tree .kids div {
+      background: var(--grey-100);
+      border-radius: 14px;
+      padding: 10px 6px;
+      text-align: center;
+      font-family: var(--mono);
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--grey-900);
+    }
+
+    .tree .kids small {
+      display: block;
+      font-size: 12px;
+      color: var(--grey-600);
+      font-weight: 400;
+      margin-top: 3px;
+    }
+
+    /* 표지 */
+    .slide.cover { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 20px; }
+
+    .cover .hero {
+      background: var(--surface);
+      border-radius: 32px;
+      padding: 64px 68px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .cover .hero .kicker { font-size: 18px; }
+
+    .cover h1 {
+      font-size: 68px;
+      line-height: 1.22;
+      margin: 0 0 22px;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+    }
+
+    .cover h1 em { font-style: normal; color: var(--blue-600); }
+
+    .cover .sub {
+      font-size: 26px;
+      line-height: 1.5;
+      color: var(--grey-700);
+      margin: 0 0 36px;
+      letter-spacing: -0.02em;
+    }
+
+    .cover .note { font-size: 18px; line-height: 1.6; color: var(--grey-600); margin: 0; }
+
+    .todo-card {
+      background: var(--surface);
+      border-radius: 32px;
+      padding: 40px 42px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .todo-card .date { font-size: 17px; font-weight: 600; color: var(--grey-600); }
+
+    .todo-card h3 { font-size: 30px; font-weight: 800; margin: 6px 0 20px; letter-spacing: -0.02em; }
+
+    .todo-card .prog {
+      display: flex;
+      justify-content: space-between;
+      font-size: 17px;
+      color: var(--grey-700);
+      margin-bottom: 10px;
+    }
+
+    .todo-card .prog b { color: var(--blue-700); }
+
+    .todo-card .track { flex: none; width: 100%; height: 10px; margin-bottom: 10px; }
+
+    .todo-card ul { list-style: none; margin: 0; padding: 0; }
+
+    .todo-card li {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--grey-100);
+      font-size: 20px;
+      color: var(--grey-800);
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .todo-card li:last-child { border-bottom: 0; }
+
+    .todo-card li i {
+      flex: 0 0 auto;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: 2.5px solid var(--grey-300);
+    }
+
+    .todo-card li small { margin-left: auto; font-size: 14px; color: var(--grey-600); }
+
+    .todo-card li.done i {
+      border-color: var(--blue-500);
+      background: var(--blue-500) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 12.5l4 4 8-9'/%3E%3C/svg%3E") center / 14px no-repeat;
+    }
+
+    .todo-card li.done span { color: var(--grey-400); text-decoration: line-through; }
+
+    .todo-card .hint { font-size: 14px; color: var(--grey-600); margin-top: 10px; }
+
+    /* 전체 화면 슬라이드 (로드맵·정리) */
+    .slide.full { align-content: center; }
+
+    .summary-head { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+    .summary-head .kicker { margin: 0; }
+    .summary-head h2 { margin: 0; }
+    .summary-head .aside { margin-left: auto; font-size: 15px; color: var(--grey-600); }
+
+    table.map {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      background: var(--surface);
+      border-radius: 26px;
+      overflow: hidden;
+      font-size: 17px;
+    }
+
+    table.map th {
+      background: var(--blue-50);
+      color: var(--blue-700);
+      text-align: left;
+      padding: 11px 18px;
+      font-size: 15px;
+    }
+
+    table.map td {
+      padding: 7px 18px;
+      border-top: 1px solid var(--grey-100);
+      color: var(--grey-800);
+    }
+
+    table.map td.n { font-weight: 800; color: var(--blue-700); text-align: center; width: 70px; }
+    table.map td.f { font-family: var(--mono); font-size: 15px; color: var(--grey-700); white-space: nowrap; }
+
+    table.map code {
+      font-family: var(--mono);
+      font-size: 14px;
+      background: var(--grey-100);
+      padding: 2px 7px;
+      border-radius: 6px;
+    }
+
+    table.map tr[data-go] { cursor: pointer; }
+    table.map tr[data-go]:hover td { background: var(--grey-50); }
+    table.map td.bad { color: var(--red-700); }
+    table.map td.good { color: var(--green-700); font-weight: 600; }
+
+    .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+
+    .card { background: var(--surface); border-radius: 28px; padding: 26px 28px; }
+
+    .card .tag {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--blue-700);
+      margin-bottom: 12px;
+    }
+
+    .card .tag::before {
+      content: "";
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--blue-500) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 12.5l4 4 8-9'/%3E%3C/svg%3E") center / 15px no-repeat;
+    }
+
+    .card p {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1.4;
+      color: var(--grey-900);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .card p span {
+      display: block;
+      font-size: 18px;
+      color: var(--grey-700);
+      font-weight: 500;
+      margin-top: 8px;
+      letter-spacing: 0;
+    }
+
+    .card.q { background: var(--blue-600); }
+    .card.q .tag { color: var(--on-accent); }
+    .card.q .tag::before { background-color: rgba(255, 255, 255, .28); }
+    .card.q p { color: var(--on-accent); }
+    .card.q p span { color: var(--on-accent-soft); }
+
+    .duo { display: grid; grid-template-columns: 1.45fr 1fr; gap: 20px; }
+
+    .panel { background: var(--surface); border-radius: 32px; padding: 30px 34px; }
+    .panel h3 { margin: 0 0 16px; font-size: 24px; font-weight: 800; letter-spacing: -0.02em; }
+
+    .panel.blue { background: var(--blue-600); color: var(--on-accent); }
+    .panel.blue ol.steps li { color: var(--on-accent); }
+    .panel.blue ol.steps li::before { background: var(--on-accent); color: var(--blue-600); }
+    .panel.blue ol.steps li small { display: block; font-size: 16px; color: var(--on-accent-soft); }
+
+    .qlist { display: grid; gap: 10px; }
+
+    .qlist div {
+      display: grid;
+      grid-template-columns: 150px 1fr;
+      gap: 14px;
+      align-items: baseline;
+      font-size: 18px;
+      line-height: 1.5;
+      color: var(--grey-800);
+      background: var(--grey-50);
+      border-radius: 16px;
+      padding: 12px 18px;
+    }
+
+    .qlist div b { color: var(--blue-700); font-size: 17px; }
+
+    .tablewrap { overflow-x: auto; border-radius: 26px; }
+
+    button:focus-visible,
+    [tabindex]:focus-visible,
+    tr[data-go]:focus-visible {
+      outline: 3px solid var(--blue-500);
+      outline-offset: 2px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .slide.active { animation: none; }
+      .track .bar { transition: none; }
+    }
+
+    /* 폰에서만 쓰는 요소 (넓은 화면에서는 숨김) */
+    .keylines,
+    .parts { display: none; }
+    .ln .tx { white-space: inherit; }
+
+    /* ---------- phone: 한 화면 = 한 페이지, 한 장을 "코드 → 설명" 2페이지로 넘기기 ---------- */
+    :root[data-layout="phone"],
+    :root[data-layout="phone"] body { height: 100%; overflow: hidden; }
+    :root[data-layout="phone"] #stage {
+      position: relative;
+      left: auto;
+      top: auto;
+      width: auto;
+      height: 100%;
+      transform: none !important;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    :root[data-layout="phone"] .topbar {
+      position: static;
+      flex: 0 0 auto;
+      height: auto;
+      padding: 8px 16px 7px;
+      background: var(--grey-100);
+      border-bottom: 1px solid var(--grey-200);
+    }
+    :root[data-layout="phone"] .topbar .deck { display: none; }
+    :root[data-layout="phone"] .topics { width: 100%; overflow-x: auto; scrollbar-width: none; }
+    :root[data-layout="phone"] .topics::-webkit-scrollbar { display: none; }
+    :root[data-layout="phone"] .topics button { font-size: 13px; padding: 6px 12px; }
+    :root[data-layout="phone"] .footer {
+      position: static;
+      flex: 0 0 auto;
+      height: auto;
+      gap: 12px;
+      padding: 6px 16px 8px;
+      background: var(--surface);
+      border-top: 1px solid var(--grey-200);
+    }
+    :root[data-layout="phone"] .footer .hint-key { display: none; }
+    :root[data-layout="phone"] .footer .track { flex: 1 1 auto; }
+    :root[data-layout="phone"] .footer button { width: 40px; height: 40px; }
+    :root[data-layout="phone"] .footer .parts { display: flex; gap: 4px; }
+    :root[data-layout="phone"] .footer .parts button {
+      width: auto;
+      height: auto;
+      font-size: 12.5px;
+      font-weight: 700;
+      line-height: 1.2;
+      padding: 7px 11px;
+      border-radius: 999px;
+      background: var(--grey-100);
+      color: var(--grey-600);
+    }
+    :root[data-layout="phone"] .footer .parts button.on { background: var(--blue-50); color: var(--blue-700); }
+    /* 슬라이드 = 남은 높이를 모두 쓰는 한 화면 */
+    :root[data-layout="phone"] .slide {
+      position: relative;
+      top: auto;
+      bottom: auto;
+      left: auto;
+      right: auto;
+      padding: 10px 16px;
+    }
+    :root[data-layout="phone"] .slide.active {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
+      min-height: 0;
+      animation: none;
+    }
+    :root[data-layout="phone"] .pane { flex: 1 1 auto; min-height: 0; }
+    :root[data-layout="phone"] .pane:not(.on) { display: none !important; }
+    :root[data-layout="phone"] .pane.on { animation: slide-up .25s ease-out; }
+    :root[data-layout="phone"] .pane.scroll { overflow-y: auto !important; }
+    :root[data-layout="phone"] .pane.kl-off .keylines { display: none; }
+    :root[data-layout="phone"] .pane.more,
+    :root[data-layout="phone"] figure.code pre.more {
+      -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 36px), transparent);
+      mask-image: linear-gradient(to bottom, #000 calc(100% - 36px), transparent);
+    }
+    /* 코드 페이지 */
+    :root[data-layout="phone"] .left {
+      height: auto;
+      padding: 0;
+      background: transparent;
+      border-radius: 0;
+      justify-content: flex-start;
+    }
+    :root[data-layout="phone"] figure.code {
+      flex: 0 1 auto;
+      min-height: 0;
+      max-height: 100%;
+      border: 1px solid var(--grey-200);
+      border-radius: 18px;
+    }
+    :root[data-layout="phone"] .chrome { height: 38px; padding: 0 14px; gap: 10px; }
+    :root[data-layout="phone"] .dots i { width: 9px; height: 9px; }
+    :root[data-layout="phone"] .fname { font-size: 12px; padding: 4px 10px; }
+    :root[data-layout="phone"] figure.code pre {
+      flex: 1 1 auto;
+      padding: 12px 0 14px;
+      font-size: 13.5px;
+      line-height: 1.55;
+      overflow: hidden;
+    }
+    :root[data-layout="phone"] figure.code pre.scroll { overflow-y: auto; }
+    :root[data-layout="phone"] pre code { display: block; }
+    /* 긴 줄은 줄바꿈: 줄 번호 칸 + 코드 칸, 이어지는 줄은 한 단계 들여쓰기 */
+    :root[data-layout="phone"] .ln {
+      display: grid;
+      grid-template-columns: 2.8em minmax(0, 1fr);
+      padding: 0 14px 0 0;
+      white-space: normal;
+    }
+    :root[data-layout="phone"] .ln .no { width: auto; padding-right: .8em; }
+    :root[data-layout="phone"] .ln .tx {
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      padding-left: 1.6em;
+      text-indent: -1.6em;
+    }
+    /* 설명 페이지: 글자 크기는 모두 em → 화면에 안 맞으면 기준 크기만 줄인다 */
+    :root[data-layout="phone"] .right {
+      height: auto;
+      padding: 18px 18px;
+      border-radius: 20px;
+      font-size: 16px;
+      overflow: hidden;
+    }
+    :root[data-layout="phone"] .right .kicker { font-size: .8125em; padding: .4em .85em; margin-bottom: .8em; }
+    :root[data-layout="phone"] h2 { font-size: 1.55em; margin-bottom: .55em; text-wrap: balance; }
+    :root[data-layout="phone"] .lead { font-size: 1em; margin-bottom: 1em; }
+    :root[data-layout="phone"] ul.pts { font-size: .97em; }
+    :root[data-layout="phone"] ul.pts li { padding-left: 1.9em; margin-bottom: .6em; }
+    :root[data-layout="phone"] ul.pts li::before { width: 1.25em; height: 1.25em; background-size: .75em; }
+    :root[data-layout="phone"] ol.steps li { font-size: .97em; padding-left: 2.4em; margin-bottom: .65em; }
+    :root[data-layout="phone"] ol.steps li::before { font-size: .8em; width: 2.1em; height: 2.1em; }
+    :root[data-layout="phone"] ol.steps li .chip { font-size: .72em; }
+    :root[data-layout="phone"] .callout { font-size: .94em; padding: .75em .95em; margin-top: 1em; border-radius: 14px; }
+    :root[data-layout="phone"] table.rule { font-size: .94em; }
+    :root[data-layout="phone"] table.rule th { font-size: .85em; padding: 0 .5em .45em; }
+    :root[data-layout="phone"] table.rule td { padding: .55em .5em; }
+    :root[data-layout="phone"] table.rule td:first-child { font-size: .9em; white-space: normal; }
+    :root[data-layout="phone"] .gap { height: .9em; }
+    :root[data-layout="phone"] .two,
+    :root[data-layout="phone"] .rules { grid-template-columns: minmax(0, 1fr); gap: .5em; margin-bottom: 1em; }
+    :root[data-layout="phone"] .two div,
+    :root[data-layout="phone"] .rules div { font-size: .94em; padding: .7em .9em; border-radius: 14px; }
+    :root[data-layout="phone"] .rules b { font-size: 1em; }
+    :root[data-layout="phone"] .rules code { font-size: .9em; }
+    /* 가로 흐름도 → 한 줄짜리 상자를 세로로 */
+    :root[data-layout="phone"] .hchain { flex-direction: column; gap: .2em; }
+    :root[data-layout="phone"] .hchain .box {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: .8em;
+      text-align: left;
+      padding: .45em .8em;
+      border-radius: 12px;
+    }
+    :root[data-layout="phone"] .hchain .box b { font-size: .94em; margin: 0; }
+    :root[data-layout="phone"] .hchain .box code { font-size: .8em; text-align: right; }
+    :root[data-layout="phone"] .hchain .arr { font-size: .9em; line-height: 1; padding-left: .8em; transform: rotate(90deg); align-self: flex-start; }
+    :root[data-layout="phone"] .flow { flex-direction: column; align-items: stretch; gap: .2em; margin-bottom: 1em; }
+    :root[data-layout="phone"] .flow .box {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: .94em;
+      padding: .45em .8em;
+      border-radius: 12px;
+    }
+    :root[data-layout="phone"] .flow .box small { margin-top: 0; font-size: .8em; }
+    :root[data-layout="phone"] .flow .arr { font-size: .8em; text-align: left; padding-left: .8em; }
+    :root[data-layout="phone"] .flow .arr::before { content: "↓ "; }
+    :root[data-layout="phone"] .flow .arr::after { display: none; }
+    :root[data-layout="phone"] .tree .root { padding: .55em .9em; border-radius: 14px; }
+    :root[data-layout="phone"] .tree .root b { font-size: 1.05em; }
+    :root[data-layout="phone"] .tree .root span { font-size: .8em; }
+    :root[data-layout="phone"] .tree .links { flex-wrap: wrap; gap: .2em 1em; font-size: .85em; padding: .45em 0; }
+    :root[data-layout="phone"] .tree .kids { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .4em; }
+    :root[data-layout="phone"] .tree .kids div { font-size: .85em; padding: .5em .3em; border-radius: 12px; }
+    :root[data-layout="phone"] .tree .kids small { font-size: .78em; }
+    /* 설명 페이지 맨 위의 "핵심 줄" (왼쪽 코드의 파란 줄을 다시 보여 줌) */
+    :root[data-layout="phone"] .keylines {
+      display: block;
+      margin: 0 0 1em;
+      padding: .5em 0 .6em;
+      border-radius: 14px;
+      background: var(--blue-50);
+      font-family: var(--mono);
+      font-size: .8em;
+      line-height: 1.5;
+      color: var(--grey-800);
+    }
+    :root[data-layout="phone"] .keylines .kl-label {
+      font-family: var(--sans);
+      font-size: .85em;
+      font-weight: 700;
+      color: var(--blue-700);
+      padding: 0 1.1em .3em;
+    }
+    :root[data-layout="phone"] .keylines .no { color: var(--blue-700); }
+    /* 표지: 소개 → 오늘 배울 것 */
+    :root[data-layout="phone"] .slide.cover .hero,
+    :root[data-layout="phone"] .slide.cover .todo-card {
+      font-size: 16px;
+      border-radius: 22px;
+      justify-content: safe center;
+      overflow: hidden;
+    }
+    :root[data-layout="phone"] .cover .hero { padding: 1.6em 1.3em; }
+    :root[data-layout="phone"] .cover .hero .kicker { font-size: .8125em; padding: .4em .85em; }
+    :root[data-layout="phone"] .cover h1 { font-size: 2.2em; margin-bottom: .5em; }
+    :root[data-layout="phone"] .cover .sub { font-size: 1.1em; margin-bottom: 1.2em; }
+    :root[data-layout="phone"] .cover .note { font-size: .9em; }
+    :root[data-layout="phone"] .todo-card { padding: 1.3em 1.25em; }
+    :root[data-layout="phone"] .todo-card .date { font-size: .95em; }
+    :root[data-layout="phone"] .todo-card h3 { font-size: 1.4em; margin-bottom: .8em; }
+    :root[data-layout="phone"] .todo-card .prog { font-size: .95em; }
+    :root[data-layout="phone"] .todo-card li { font-size: 1em; gap: .65em; padding: .75em 0; }
+    :root[data-layout="phone"] .todo-card li i { width: 1.5em; height: 1.5em; }
+    :root[data-layout="phone"] .todo-card li small { font-size: .75em; }
+    :root[data-layout="phone"] .todo-card .hint { font-size: .8em; }
+    /* 로드맵 · 정리 같은 전체 화면 장 */
+    :root[data-layout="phone"] .slide.full { align-content: normal; }
+    :root[data-layout="phone"] .slide.full > .pane { display: block; font-size: 15px; overflow: hidden; }
+    :root[data-layout="phone"] .summary-head { flex-wrap: wrap; gap: .4em .7em; margin-bottom: .9em; }
+    :root[data-layout="phone"] .summary-head .kicker { font-size: .8125em; padding: .4em .85em; }
+    :root[data-layout="phone"] .summary-head h2 { font-size: 1.45em; margin: 0; }
+    :root[data-layout="phone"] .summary-head .aside { margin-left: 0; flex-basis: 100%; font-size: .8em; }
+    /* 표 → 한 행씩 쌓은 목록 */
+    :root[data-layout="phone"] .tablewrap { overflow: visible; border-radius: 18px; background: var(--surface); }
+    :root[data-layout="phone"] table.map,
+    :root[data-layout="phone"] table.map tbody { display: block; font-size: .9em; border-radius: 18px; }
+    :root[data-layout="phone"] table.map tr:first-child { display: none; }
+    :root[data-layout="phone"] table.map tr {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: .15em .6em;
+      padding: .55em .9em;
+      border-top: 1px solid var(--grey-100);
+    }
+    :root[data-layout="phone"] table.map tr:nth-child(2) { border-top: 0; }
+    :root[data-layout="phone"] table.map td { display: block; padding: 0; border: 0; }
+    :root[data-layout="phone"] table.map td.n { width: auto; text-align: left; }
+    :root[data-layout="phone"] table.map tr[data-go] td:nth-child(3) { order: 1; flex: 1 1 0; min-width: 0; }
+    :root[data-layout="phone"] table.map tr[data-go] td.f,
+    :root[data-layout="phone"] table.map tr[data-go] td:nth-child(4) { order: 2; font-size: .82em; color: var(--grey-600); }
+    :root[data-layout="phone"] table.map tr[data-go] td.f { padding-left: 1.9em; }
+    :root[data-layout="phone"] table.map td.bad { flex-basis: 100%; }
+    :root[data-layout="phone"] table.map td.good { flex: 1 1 0; min-width: 0; }
+    :root[data-layout="phone"] table.map code { font-size: .88em; }
+    :root[data-layout="phone"] .cards,
+    :root[data-layout="phone"] .duo { grid-template-columns: minmax(0, 1fr); gap: .6em; }
+    :root[data-layout="phone"] .card { padding: .8em 1em; border-radius: 16px; }
+    :root[data-layout="phone"] .card .tag { font-size: .8em; margin-bottom: .4em; }
+    :root[data-layout="phone"] .card .tag::before { width: 1.3em; height: 1.3em; background-size: .8em; }
+    :root[data-layout="phone"] .card p { font-size: 1.1em; }
+    :root[data-layout="phone"] .card p span { font-size: .85em; margin-top: .25em; }
+    :root[data-layout="phone"] .panel { padding: 1em; border-radius: 18px; }
+    :root[data-layout="phone"] .panel h3 { font-size: 1.1em; margin-bottom: .6em; }
+    :root[data-layout="phone"] .panel.blue ol.steps li small { font-size: .85em; }
+    :root[data-layout="phone"] .qlist { gap: .4em; }
+    :root[data-layout="phone"] .qlist div { grid-template-columns: minmax(0, 1fr); gap: .1em; font-size: .9em; padding: .55em .8em; border-radius: 12px; }
+    :root[data-layout="phone"] .qlist div b { font-size: .9em; }
+    
+
+    /* 폰 전용 사본을 넓은 화면에서 열면 폰 폭의 기둥으로 가운데 정렬 */
+    :root[data-layout="phone"] #stage { max-width: 640px; margin: 0 auto; }
+
+
+    @media (prefers-reduced-motion: reduce) {
+      :root[data-layout="phone"] .pane.on { animation: none; }
+    }
+    /* ---------- tablet(iPad): 한 장 = 한 화면. 가로는 좌우, 세로·Split View는 위(코드)·아래(설명) ---------- */
+    :root[data-layout="tablet"],
+    :root[data-layout="tablet"] body { height: 100%; overflow: hidden; }
+
+    :root[data-layout="tablet"] #stage {
+      position: relative;
+      left: auto;
+      top: auto;
+      width: auto;
+      height: 100%;
+      transform: none !important;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    :root[data-layout="tablet"] .topbar {
+      position: static;
+      flex: 0 0 auto;
+      height: auto;
+      padding: 14px 24px 10px;
+      gap: 16px;
+    }
+
+    :root[data-layout="tablet"] .topbar .deck { flex: 0 0 auto; font-size: 16px; }
+    :root[data-layout="tablet"] .topics { min-width: 0; overflow-x: auto; scrollbar-width: none; }
+    :root[data-layout="tablet"] .topics::-webkit-scrollbar { display: none; }
+    :root[data-layout="tablet"] .topics button { font-size: 14px; padding: 8px 14px; }
+
+    :root[data-layout="tablet"] .footer {
+      position: static;
+      flex: 0 0 auto;
+      height: auto;
+      gap: 16px;
+      padding: 10px 24px 14px;
+    }
+
+    :root[data-layout="tablet"] .footer .hint-key { display: none; }
+    :root[data-layout="tablet"] .footer .track { flex: 1 1 auto; }
+    :root[data-layout="tablet"] .footer button { width: 48px; height: 48px; }
+
+    :root[data-layout="tablet"] .slide {
+      position: relative;
+      top: auto;
+      bottom: auto;
+      left: auto;
+      right: auto;
+      padding: 4px 24px 10px;
+    }
+
+    :root[data-layout="tablet"] .slide.active {
+      display: grid;
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+
+    :root[data-layout="tablet"] .slide.split,
+    :root[data-layout="tablet"] .slide.cover {
+      gap: 16px;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+      grid-template-rows: minmax(0, 1fr);
+    }
+
+    :root[data-layout="tablet"][data-split="stack"] .slide.split,
+    :root[data-layout="tablet"][data-split="stack"] .slide.cover {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: auto minmax(0, 1fr);
+      gap: 12px;
+    }
+
+    :root[data-layout="tablet"] .pane { min-height: 0; }
+    :root[data-layout="tablet"] .pane.scroll { overflow-y: auto !important; }
+
+    :root[data-layout="tablet"] .pane.more,
+    :root[data-layout="tablet"] figure.code pre.more {
+      -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 40px), transparent);
+      mask-image: linear-gradient(to bottom, #000 calc(100% - 40px), transparent);
+    }
+
+    /* 코드 칸 */
+    :root[data-layout="tablet"] .left { height: auto; padding: 12px; border-radius: 24px; }
+    :root[data-layout="tablet"][data-split="stack"] .left { justify-content: flex-start; padding: 10px; }
+    :root[data-layout="tablet"][data-split="stack"] .right { padding: 20px 24px; }
+    :root[data-layout="tablet"][data-split="stack"] .slide { padding-bottom: 8px; }
+    :root[data-layout="tablet"] figure.code { flex: 0 1 auto; min-height: 0; max-height: 100%; border-radius: 18px; }
+    :root[data-layout="tablet"] .chrome { height: 42px; padding: 0 18px; }
+    :root[data-layout="tablet"] .fname { font-size: 13px; }
+
+    :root[data-layout="tablet"] figure.code pre {
+      flex: 1 1 auto;
+      padding: 12px 0 14px;
+      font-size: 15.5px;
+      line-height: 1.5;
+      overflow: hidden;
+    }
+
+    :root[data-layout="tablet"] figure.code pre.scroll { overflow-y: auto; }
+    :root[data-layout="tablet"] pre code { display: block; }
+
+    :root[data-layout="tablet"] .ln {
+      display: grid;
+      grid-template-columns: 3em minmax(0, 1fr);
+      padding: 0 18px 0 0;
+      white-space: normal;
+    }
+
+    :root[data-layout="tablet"] .ln .no { width: auto; padding-right: .9em; }
+
+    :root[data-layout="tablet"] .ln .tx {
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      padding-left: 1.6em;
+      text-indent: -1.6em;
+    }
+
+    /* 설명 칸: 글자 크기는 모두 em → 화면에 안 맞으면 기준 크기만 줄인다 */
+    :root[data-layout="tablet"] .right {
+      height: auto;
+      padding: 26px 30px;
+      border-radius: 24px;
+      font-size: 18px;
+      overflow: hidden;
+    }
+
+    :root[data-layout="tablet"] .right .kicker { font-size: .8em; padding: .4em .85em; margin-bottom: .8em; }
+    :root[data-layout="tablet"] h2 { font-size: 1.75em; margin-bottom: .5em; text-wrap: balance; }
+    :root[data-layout="tablet"] .lead { font-size: 1em; margin-bottom: 1em; }
+    :root[data-layout="tablet"] ul.pts { font-size: .97em; }
+    :root[data-layout="tablet"] ul.pts li { padding-left: 1.9em; margin-bottom: .6em; }
+    :root[data-layout="tablet"] ul.pts li::before { width: 1.25em; height: 1.25em; background-size: .75em; }
+    :root[data-layout="tablet"] ol.steps li { font-size: .97em; padding-left: 2.4em; margin-bottom: .65em; }
+    :root[data-layout="tablet"] ol.steps li::before { font-size: .8em; width: 2.1em; height: 2.1em; }
+    :root[data-layout="tablet"] ol.steps li .chip { font-size: .72em; }
+    :root[data-layout="tablet"] .callout { font-size: .92em; padding: .75em 1em; margin-top: 1em; border-radius: 16px; }
+    :root[data-layout="tablet"] table.rule { font-size: .94em; }
+    :root[data-layout="tablet"] table.rule th { font-size: .82em; padding: 0 .6em .45em; }
+    :root[data-layout="tablet"] table.rule td { padding: .55em .6em; }
+    :root[data-layout="tablet"] table.rule td:first-child { font-size: .9em; }
+    :root[data-layout="tablet"] .gap { height: .9em; }
+    :root[data-layout="tablet"] .two,
+    :root[data-layout="tablet"] .rules { gap: .55em; margin-bottom: 1em; }
+    :root[data-layout="tablet"] .two div,
+    :root[data-layout="tablet"] .rules div { font-size: .9em; padding: .7em .9em; border-radius: 14px; }
+    :root[data-layout="tablet"] .rules b { font-size: 1em; }
+    :root[data-layout="tablet"] .rules code { font-size: .9em; }
+    :root[data-layout="tablet"] .hchain { gap: .35em; }
+    :root[data-layout="tablet"] .hchain .box { padding: .6em .5em; border-radius: 14px; }
+    :root[data-layout="tablet"] .hchain .box b { font-size: .9em; margin-bottom: .2em; }
+    :root[data-layout="tablet"] .hchain .box code { font-size: .74em; overflow-wrap: anywhere; }
+    :root[data-layout="tablet"] .hchain .arr { font-size: 1.1em; }
+
+    /* 변환 흐름은 한 줄짜리 상자를 세로로 */
+    :root[data-layout="tablet"] .flow { flex-direction: column; align-items: stretch; gap: .2em; margin-bottom: 1em; }
+
+    :root[data-layout="tablet"] .flow .box {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: .9em;
+      padding: .45em .8em;
+      border-radius: 12px;
+    }
+
+    :root[data-layout="tablet"] .flow .box small { margin-top: 0; font-size: .8em; }
+    :root[data-layout="tablet"] .flow .arr { font-size: .78em; text-align: left; padding-left: .8em; }
+    :root[data-layout="tablet"] .flow .arr::before { content: "↓ "; }
+    :root[data-layout="tablet"] .flow .arr::after { display: none; }
+
+    :root[data-layout="tablet"] .tree .root { padding: .55em .9em; border-radius: 14px; }
+    :root[data-layout="tablet"] .tree .root b { font-size: 1.05em; }
+    :root[data-layout="tablet"] .tree .root span { font-size: .78em; }
+    :root[data-layout="tablet"] .tree .links { flex-wrap: wrap; gap: .2em 1.2em; font-size: .85em; padding: .45em 0; }
+    :root[data-layout="tablet"] .tree .kids { gap: .4em; }
+    :root[data-layout="tablet"] .tree .kids div { font-size: .82em; padding: .55em .3em; border-radius: 12px; }
+    :root[data-layout="tablet"] .tree .kids small { font-size: .78em; }
+
+    /* 표지 */
+    :root[data-layout="tablet"] .slide.cover .hero,
+    :root[data-layout="tablet"] .slide.cover .todo-card {
+      height: auto;
+      font-size: 18px;
+      border-radius: 24px;
+      justify-content: safe center;
+      overflow: hidden;
+    }
+
+    :root[data-layout="tablet"] .cover .hero { padding: 2em 1.8em; }
+    :root[data-layout="tablet"] .cover .hero .kicker { font-size: .8em; padding: .4em .85em; }
+    :root[data-layout="tablet"] .cover h1 { font-size: 2.6em; margin-bottom: .5em; }
+    :root[data-layout="tablet"] .cover .sub { font-size: 1.15em; margin-bottom: 1.1em; }
+    :root[data-layout="tablet"] .cover .note { font-size: .85em; }
+    :root[data-layout="tablet"] .todo-card { padding: 1.5em 1.5em; }
+    :root[data-layout="tablet"] .todo-card .date { font-size: .9em; }
+    :root[data-layout="tablet"] .todo-card h3 { font-size: 1.5em; margin-bottom: .7em; }
+    :root[data-layout="tablet"] .todo-card .prog { font-size: .9em; }
+    :root[data-layout="tablet"] .todo-card li { font-size: 1em; gap: .7em; padding: .65em 0; }
+    :root[data-layout="tablet"] .todo-card li i { width: 1.4em; height: 1.4em; }
+    :root[data-layout="tablet"] .todo-card li small { font-size: .72em; }
+    :root[data-layout="tablet"] .todo-card .hint { font-size: .78em; }
+
+    /* 로드맵 · 정리 같은 전체 화면 장 */
+    :root[data-layout="tablet"] .slide.full { align-content: stretch; grid-template-rows: minmax(0, 1fr); }
+
+    :root[data-layout="tablet"] .slide.full > .pane {
+      display: flex;
+      flex-direction: column;
+      justify-content: safe center;
+      font-size: 17px;
+      overflow: hidden;
+    }
+
+    :root[data-layout="tablet"] .summary-head { flex-wrap: wrap; gap: .5em .8em; margin-bottom: .9em; }
+    :root[data-layout="tablet"] .summary-head .kicker { font-size: .8em; padding: .4em .85em; }
+    :root[data-layout="tablet"] .summary-head h2 { font-size: 1.6em; margin: 0; }
+    :root[data-layout="tablet"] .summary-head .aside { font-size: .78em; }
+    :root[data-layout="tablet"] .tablewrap { flex: 0 0 auto; border-radius: 20px; }
+    :root[data-layout="tablet"] table.map { font-size: .95em; border-radius: 20px; }
+    :root[data-layout="tablet"] table.map th { font-size: .85em; padding: .65em 1.1em; }
+    :root[data-layout="tablet"] table.map td { padding: .45em 1.1em; }
+    :root[data-layout="tablet"] table.map td.n { width: 3.2em; }
+    :root[data-layout="tablet"] table.map td.f { font-size: .85em; }
+    :root[data-layout="tablet"] table.map code { font-size: .82em; }
+    :root[data-layout="tablet"] .cards { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .8em; }
+    :root[data-layout="tablet"][data-split="stack"] .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    :root[data-layout="tablet"] .card { padding: 1em 1.2em; border-radius: 20px; }
+    :root[data-layout="tablet"] .card .tag { font-size: .8em; margin-bottom: .5em; }
+    :root[data-layout="tablet"] .card .tag::before { width: 1.3em; height: 1.3em; background-size: .8em; }
+    :root[data-layout="tablet"] .card p { font-size: 1.25em; }
+    :root[data-layout="tablet"] .card p span { font-size: .78em; margin-top: .35em; }
+    :root[data-layout="tablet"] .duo { gap: .9em; }
+    :root[data-layout="tablet"][data-split="stack"] .duo { grid-template-columns: minmax(0, 1fr); }
+    :root[data-layout="tablet"] .panel { padding: 1.2em 1.3em; border-radius: 22px; }
+    :root[data-layout="tablet"] .panel h3 { font-size: 1.15em; margin-bottom: .6em; }
+    :root[data-layout="tablet"] .panel.blue ol.steps li small { font-size: .85em; }
+    :root[data-layout="tablet"] .qlist { gap: .45em; }
+    :root[data-layout="tablet"] .qlist div { grid-template-columns: 9em minmax(0, 1fr); gap: .8em; font-size: .92em; padding: .6em .9em; border-radius: 14px; }
+    :root[data-layout="tablet"] .qlist div b { font-size: .9em; }
+
+    @media (prefers-reduced-motion: reduce) {
+      :root[data-layout="tablet"] .slide.active { animation: none; }
+    }
+
+  </style>
+  <script>
+    // 화면 방식: stage(PC 무대) · phone(한 화면 = 한 페이지) · tablet(iPad: 한 장 = 한 화면)
+    // 기기별 배포 사본은 빌드할 때 window.GUIDE_DEVICE 를 "phone" 또는 "tablet"으로 고정한다
+    function applyLayout() {
+      var root = document.documentElement;
+      var w = window.innerWidth;
+      var h = window.innerHeight;
+      var layout = window.GUIDE_DEVICE || (w < 900 ? "phone" : "stage");
+      root.setAttribute("data-layout", layout);
+      root.setAttribute("data-split", w >= 960 && w > h ? "side" : "stack");
+      return layout;
+    }
+    applyLayout();
+  </script>
+</head>
+
+<body>
+  <div id="stage">
+    <div class="topbar">
+      <div class="deck"><i>R</i>고양이 짤방 생성기로 배우는 React</div>
+      <div class="topics" id="topics"></div>
+    </div>
+
+    <!-- ================= 표지 ================= -->
+    <section class="slide cover">
+      <div class="hero">
+        <div class="kicker">React 입문 · 파일 순서별 학습 가이드</div>
+        <h1>고양이 짤방 생성기로<br />배우는 <em>React</em></h1>
+        <p class="sub">DOM을 직접 고치지 말고,<br />state를 바꾸면 React가 화면을 다시 그린다</p>
+        <p class="note">예제: <code class="i">answers/</code> 2번 → 33번 → <code class="i">cat-jjal-maker-cra</code><br />
+          왼쪽은 코드, 오른쪽은 설명 · 파란 줄이 이번 장의 핵심 줄입니다</p>
+      </div>
+      <div class="todo-card">
+        <div class="date">2026년 10월 3일</div>
+        <h3>오늘 배울 것</h3>
+        <div class="prog"><span>진행률</span><b id="todoCount">7개 중 0개 완료</b></div>
+        <div class="track">
+          <div class="bar" id="todoBar"></div>
+        </div>
+        <ul id="todoList">
+          <li tabindex="0" data-key="basic"><i></i><span>명령형 → 선언형 · JSX</span><small>1~2단계</small></li>
+          <li tabindex="0" data-key="comp"><i></i><span>컴포넌트 · 스타일 · 이벤트</span><small>3~5단계</small></li>
+          <li tabindex="0" data-key="state"><i></i><span>state · 리스트와 key</span><small>6~7단계</small></li>
+          <li tabindex="0" data-key="form"><i></i><span>폼 · 코드 정리</span><small>8~9단계</small></li>
+          <li tabindex="0" data-key="data"><i></i><span>localStorage · API · useEffect</span><small>10~11단계</small></li>
+          <li tabindex="0" data-key="deep"><i></i><span>조건부 렌더링 · setState</span><small>12~13단계</small></li>
+          <li tabindex="0" data-key="final"><i></i><span>진짜 프로젝트 · 실무 완성본</span><small>14단계~</small></li>
+        </ul>
+        <div class="hint">항목을 누르면 완료 표시가 저장됩니다</div>
+      </div>
+    </section>
+
+    <!-- ================= 0. 학습법 ================= -->
+    <section class="slide split">
+      <div class="left">
+        <figure class="code">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="fname">terminal</span></div>
+          <pre data-hl="2"><script type="text/plain">
+# ① 앞 파일과 비교(diff)하며 보기
+diff answers/14-state.html answers/15-lifting-state-up.html
+
+# ② VS Code: 두 파일 선택 → 우클릭 → Compare Selected
+
+# ③ 번호가 빈 회차(1, 3, 5, 24~27, 30)는 HTML 파일이 없음
+ls answers
+</script></pre>
+        </figure>
+      </div>
+      <div class="right">
+        <div class="kicker">0 · 이 가이드를 쓰는 법</div>
+        <h2>바뀐 줄만 보면<br /><em>가장 빨리 배운다</em></h2>
+        <p class="lead">HTML 파일들은 <b>바로 앞 파일에서 조금씩만</b> 바뀝니다. 전체를 읽기보다 앞 파일과 비교해서 "무엇이 바뀌었나"를 보세요.</p>
+        <ul class="pts">
+          <li>루트의 <code class="i">index.html</code>은 15~16단계 근처이고, 강의(React 17)와 달리 이미 React 18의 <code class="i">createRoot</code>를 쓴다</li>
+          <li>단계를 끝낼 때마다 "이번 파일에서 새로 생긴 줄"만 소리 내어 설명할 수 있으면 통과</li>
+          <li>💼 표시는 "실무에서는 이렇게" — 강의 코드가 틀렸다는 뜻이 아니라 학습용으로 단순하게 만든 것</li>
+        </ul>
+        <div class="callout">DOM을 직접 고치지 말고, state를 바꾸면 React가 화면을 다시 그린다</div>
+      </div>
+    </section>
+
+    <!-- ================= 로드맵 ================= -->
+    <section class="slide full">
+      <div>
+        <div class="summary-head">
+          <div class="kicker">학습 로드맵</div>
+          <h2>14단계로 따라가기</h2>
+          <span class="aside">행을 누르면 그 단계로 이동합니다</span>
+        </div>
+        <div class="tablewrap"><table class="map">
+          <tr><th>단계</th><th>파일 번호</th><th>새로 배우는 것</th><th>💼 실무 키워드</th></tr>
+          <tr tabindex="0" data-go="st1"><td class="n">1</td><td class="f">2 · 4</td><td>정적 HTML 뼈대, DOM 직접 조작</td><td>명령형 vs 선언형</td></tr>
+          <tr tabindex="0" data-go="st2"><td class="n">2</td><td class="f">6 · 7 · 8</td><td>React 로딩, JSX, 화면에 그리기</td><td><code>createRoot</code>, 빌드 도구</td></tr>
+          <tr tabindex="0" data-go="st3"><td class="n">3</td><td class="f">9 · 10 · 11</td><td>컴포넌트, props, children</td><td>PascalCase, 구조 분해</td></tr>
+          <tr tabindex="0" data-go="st4"><td class="n">4</td><td class="f">12</td><td><code>className</code>, <code>style</code> 객체</td><td>CSS 클래스 우선</td></tr>
+          <tr tabindex="0" data-go="st5"><td class="n">5</td><td class="f">13</td><td><code>onClick</code>, <code>onSubmit</code>, <code>preventDefault</code></td><td>함수 "전달" vs "호출"</td></tr>
+          <tr tabindex="0" data-go="st6"><td class="n">6</td><td class="f">14 · 15 · 16</td><td><code>useState</code>, state 끌어올리기</td><td>단방향 데이터 흐름</td></tr>
+          <tr tabindex="0" data-go="st7"><td class="n">7</td><td class="f">17 · 18</td><td><code>map</code>, <code>key</code>, 배열 state</td><td>불변성, 안정적인 key</td></tr>
+          <tr tabindex="0" data-go="st8"><td class="n">8</td><td class="f">19 · 20</td><td>제어 컴포넌트, 유효성 검사</td><td>입력 중 + 제출 시 검증</td></tr>
+          <tr tabindex="0" data-go="st9"><td class="n">9</td><td class="f">21</td><td>props 이름 규칙, early return</td><td><code>onX</code> / <code>handleX</code></td></tr>
+          <tr tabindex="0" data-go="st10"><td class="n">10</td><td class="f">22 · 23</td><td>localStorage, JSON 저장</td><td>저장 로직 한곳에 모으기</td></tr>
+          <tr tabindex="0" data-go="st11"><td class="n">11</td><td class="f">28 · 29</td><td><code>fetch</code>, <code>async/await</code>, <code>useEffect</code></td><td>에러 처리, cleanup</td></tr>
+          <tr tabindex="0" data-go="st12"><td class="n">12</td><td class="f">31 · 32</td><td>조건부 렌더링, 파생 값</td><td><code>&amp;&amp;</code>와 숫자 0 함정</td></tr>
+          <tr tabindex="0" data-go="st13"><td class="n">13</td><td class="f">33</td><td>지연 초기화, 함수형 업데이트</td><td>업데이트 함수는 순수하게</td></tr>
+          <tr tabindex="0" data-go="st14"><td class="n">14</td><td class="f">cra/</td><td>파일 분리, <code>import/export</code>, 빌드/배포</td><td>Vite, 폴더 구조</td></tr>
+        </table></div>
+      </div>
+    </section>
+
+    <!-- ================= 1단계 ================= -->
+    <section class="slide split" data-topic="basic" id="st1">
+      <div class="left">
+        <figure class="code">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="fname">4-vanilla-js.html</span></div>
+          <pre data-hl="6,15"><script type="text/plain">
+// 1. 좋아요 버튼 찾기
+const likeButton = document.querySelector(".main-card button");
+// 2. 좋아요 버튼 눌렀을 때 이벤트
+likeButton.addEventListener("click", function () {
+  // 3. 하트 색 바꾸기
+  likeButton.innerHTML = "❤️";
+  // 4. 고양이 사진을 추가할 곳 찾기
+  const favorites = document.querySelector(".favorites");
+  // 5~7. img를 만들고 li로 감싸기
+  const newFavoriteImage = document.createElement("img");
+  newFavoriteImage.src = CAT_URL;
+  const li = document.createElement("li");
+  li.appendChild(newFavoriteImage);
+  // 8. 방금 만든 요소 넣기
+  favorites.appendChild(li);
+});
+</script></pre>
+        </figure>
+      </div>
+      <div class="right">
+        <div class="kicker">1단계 · 2-setup · 4-vanilla-js</div>
+        <h2>명령형: 모든 단계를<br /><em>직접 지시한다</em></h2>
+        <p class="lead">하트 하나를 누르는 데 <b>8단계</b>를 하나하나 지시합니다. 이것이 명령형(imperative) 방식입니다.</p>
+        <div class="two">
+          <div><b>명령형 · 순수 JS</b>버튼 찾기 → 이벤트 → 요소 만들기 → 붙이기를 직접</div>
+          <div><b>선언형 · React</b>"state가 이렇다면 화면은 이렇다"만 적으면 DOM은 React가</div>
+        </div>
+        <ul class="pts">
+          <li>"즐겨찾기가 몇 개?" 같은 <b>데이터가 DOM 안에 흩어져</b> 있어, 화면이 커질수록 데이터와 화면이 어긋난다</li>
+          <li><code class="i">2-setup</code>의 네 덩어리(제목 · 폼 · 메인 카드 · 즐겨찾기)가 나중에 <b>컴포넌트 4개</b>가 된다</li>
+        </ul>
+        <div class="callout warn">⚠ 누를 때마다 같은 고양이가 계속 추가된다 (중복 검사 없음) → 실무 완성본에서 해결</div>
+      </div>
+    </section>
+
+    <!-- ================= 2단계: React 로딩 ================= -->
+    <section class="slide split" data-topic="basic" id="st2">
+      <div class="left">
+        <figure class="code">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="fname">6-react-tasting.html · 발췌</span></div>
+          <pre data-hl="6,7,13">&lt;!-- ① React 핵심 · ② DOM에 그리기 · ③ JSX 변환 --&gt;
+&lt;script src="https://unpkg.com/react@17/umd/..."&gt;&lt;/script&gt;
+&lt;script src="https://unpkg.com/react-dom@17/umd/..."&gt;&lt;/script&gt;
+&lt;script src="https://unpkg.com/babel-standalone@6/..."&gt;&lt;/script&gt;
+
+&lt;script type="text/babel"&gt;
+  const catItem = (
+    &lt;li&gt;
+      &lt;img src="https://cataas.com/cat/HSENVDU4ZMqy7KQ0/says/react" /&gt;
+    &lt;/li&gt;
+  );
+  const 여기다가그려 = document.querySelector("#app");
+  ReactDOM.render(catItem, 여기다가그려);
+&lt;/script&gt;</pre>
+        </figure>
+      </div>
+      <div class="right">
+        <div class="kicker">2단계 · 6-react-tasting</div>
+        <h2>React 맛보기:<br /><em>script 3개</em>로 시작</h2>
+        <table class="rule">
+          <tr><th>script</th><th>역할</th></tr>
+          <tr><td>react</td><td>컴포넌트·훅 같은 <b>React의 핵심</b></td></tr>
+          <tr><td>react-dom</td><td>만든 화면을 <b>브라우저 DOM에 그리기</b></td></tr>
+          <tr><td>babel-standalone</td><td>브라우저가 모르는 <b>JSX를 JS로 변환</b><br />(<code class="i">type="text/babel"</code> 안만)</td></tr>
+        </table>
+        <div class="callout">JSX는 HTML이 아니라 JS 표현식 → 내부적으로 <code class="i">React.createElement(...)</code> 호출로 바뀐다</div>
+        <div class="callout biz">💼 브라우저에서 매번 변환하는 방식은 학습용. 실무에서는 Vite 같은 빌드 도구가 미리 변환한다 (14단계)</div>
+      </div>
+    </section>
+
+    <!-- ================= 2단계: JSX 규칙 ================= -->
+    <section class="slide split" data-topic="basic">
+      <div class="left">
+        <figure class="code">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="fname">7-jsx · 8-jsx-quiz-answer</span></div>
+          <pre data-hl="7,16"><script type="text/plain">
+// JSX는 JS 표현식 → 변수에 담을 수 있다
+const catItem = <li>고양이</li>;
+
+const app = (
+  <div>
+    <img src={CAT1} />
+    <ul className="favorites">{catItem}</ul>
+    <p>{isLiked ? "💖" : "🤍"}</p>
+  </div>
+);
+
+// React 17 (강의 파일) → React 19에서 제거됨
+ReactDOM.render(app, rootElement);
+
+// React 18 이상 (현재 index.html) → 현재 표준
+ReactDOM.createRoot(rootElement).render(app);
+</script></pre>
+        </figure>
+      </div>
+      <div class="right">
+        <div class="kicker">2단계 · 7-jsx · 8-jsx-quiz-answer</div>
+        <h2>JSX 규칙 3가지와<br /><em>화면에 그리는 API</em></h2>
+        <ol class="steps">
+          <li>최상위는 <b>하나의 부모</b>로 감싸기<span class="chip">5행</span></li>
+          <li>모든 태그는 <b>닫기</b> — <code class="i">&lt;img /&gt;</code>, <code class="i">&lt;input /&gt;</code><span class="chip">6행</span></li>
+          <li><code class="i">{ }</code> 안에는 <b>값이 되는 표현식만</b> — 변수·함수 호출·삼항 O, <code class="i">if</code>·<code class="i">for</code> X<span class="chip">7·8행</span></li>
+        </ol>
+        <div class="callout warn">⚠ 7~11번의 <code class="i">class="favorites"</code>는 콘솔 경고 → JSX에서는 <code class="i">className</code> (4단계)</div>
+        <div class="callout biz">💼 강의의 <code class="i">babel-standalone@6</code>은 <code class="i">??</code> <code class="i">?.</code> <code class="i">&lt;&gt;</code>를 못 읽을 수 있다. 이런 script(UMD) 실습은 React 18까지만 가능</div>
+      </div>
+    </section>
+
+    <!-- ================= 3단계: 컴포넌트 ================= -->
+    <section class="slide split" data-topic="comp" id="st3">
+      <div class="left">
+        <figure class="code">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="fname">9-what-is-component.html</span></div>
+          <pre data-hl="7,17"><script type="text/plain">
+// 일반 함수: 인자를 받아 값을 돌려준다
+function sayHello(name) {
+  return "안녕, " + name;
+}
+
+// 컴포넌트: props를 받아 JSX를 돌려준다
+function Card({ title, description }) {
+  return (
+    <div>
+      <h2>{title}</h2>
+      {description}
+    </div>
+  );
+}
+
+Card("리액트 짱", "리액트 입니다");                    // ❌ 함수 호출
+<Card title="리액트 짱" description="리액트 입니다" />; // ✅ 컴포넌트 사용
+</script></pre>
+        </figure>
+      </div>
+      <div class="right">
+        <div class="kicker">3단계 · 9-what-is-component</div>
+        <h2>컴포넌트 = props를 받아<br /><em>JSX를 돌려주는 함수</em></h2>
+        <p class="lead">인자는 <b>props 객체 하나</b>로 들어옵니다. <code class="i">({ title })</code>처럼 구조 분해하면 <code class="i">props.title</code> 대신 바로 씁니다.</p>
+        <ul class="pts">
+          <li>이름은 반드시 <b>대문자로 시작</b> — <code class="i">&lt;card /&gt;</code>는 HTML 태그로 착각한다</li>
+          <li>함수 선언과 화살표 함수는 똑같이 동작 → 💼 팀에서 한 가지 스타일로 통일</li>
+        </ul>
+        <div class="callout warn">⚠ <code class="i">Card(...)</code>로 직접 호출하면, 안에서 쓴 <code class="i">useState</code>가 호출한 쪽 컴포넌트의 훅으로 취급된다 → 항상 <code class="i">&lt;Card /&gt;</code></div>
+      </div>
+    </section>
+
+    <!-- ================= 3단계: 컴포넌트로 나누기 ================= -->
+    <section class="slide split" data-topic="comp">
+      <div class="left">
+        <figure class="code">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="fname">10-making-component · 11-quiz</span></div>
+          <pre data-hl="2,7,16"><script type="text/plain">
+function Title(props) {
+  return <h1>{props.children}</h1>;
+}
+function CatItem(props) {
+  return <li><img src={props.img} /></li>;
+}
+const MainCard = ({ img }) => (
+  <div className="main-card">
+    <img src={img} alt="고양이" width="400" />
+    <button>🤍</button>
+  </div>
+);
+
+const app = (
+  <div>
+    <Title>1번째 고양이 가라사대</Title>
+    <MainCard img={CAT1} />
+    <CatItem img={CAT2} />
+  </div>
+);
+</script></pre>
+        </figure>
+      </div>
+      <div class="right">
+        <div class="kicker">3단계 · 10-making-component · 11-quiz</div>
+        <h2>화면 덩어리를<br /><em>컴포넌트로 나누기</em></h2>
+        <div class="two">
+          <div><b>props.children</b>여는·닫는 태그 <u>사이</u>에 넣은 내용<br /><code class="i">&lt;Title&gt;…&lt;/Title&gt;</code></div>
+          <div><b>props.img</b><u>속성</u>으로 넘긴 값<br /><code class="i">&lt;CatItem img="…" /&gt;</code></div>
+        </div>
+        <div class="tree">
+          <div class="root"><b>App</b><span>화면 전체를 조립</span></div>
+          <div class="links plain">↓</div>
+          <div class="kids">
+            <div>Title</div>
+            <div>Form</div>
+            <div>MainCard</div>
+            <div>Favorites<small>└ CatItem × n</small></div>
+          </div>
+        </div>
+        <div class="callout biz">💼 컴포넌트 하나 = 역할 하나. 이름만 보고 무엇을 하는지 알 수 있으면 잘 나눈 것</div>
+      </div>
+    </section>
+
+    <!-- ================= 4단계: 스타일링 ================= -->
+    <section class="slide split" data-topic="comp" id="st4">
+      <div class="left">
+        <figure class="code">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="fname">12-styling.html</span></div>
+          <pre data-hl="5,8"><script type="text/plain">
+// ❌ 7~11번: JSX에서 class는 경고
+<ul class="favorites">...</ul>
+
+// ✅ 12번: className
+<ul className="favorites">...</ul>
+
+// 인라인 스타일은 "객체"로
+<img src={img} style={{ width: "150px" }} />
+
+// CSS 속성은 camelCase, 숫자만 쓰면 px
+<p style={{ backgroundColor: "pink", fontSize: 20 }}>야옹</p>
+</script></pre>
+        </figure>
+      </div>
+      <div class="right">
+        <div class="kicker">4단계 · 12-styling</div>
+        <h2>className과<br /><em>style 객체</em></h2>
+        <p class="lead"><code class="i">class</code>는 JS의 예약어라서 JSX에서는 <b>className</b>을 씁니다.</p>
+        <div class="two">
+          <div><b>바깥 { }</b>"여기서부터 JS 표현식"</div>
+          <div><b>안쪽 { }</b>JS 객체 리터럴<br /><code class="i">{ width: "150px" }</code></div>
+        </div>
+        <ul class="pts">
+          <li><code class="i">background-color</code> → <code class="i">backgroundColor</code>처럼 camelCase</li>
+          <li>숫자만 쓰면 px로 처리되는 속성이 많다 <code class="i">{ width: 150 }</code></li>
+        </ul>
+        <div class="callout biz">💼 고정 스타일은 CSS 클래스에. 인라인 style은 값이 state에 따라 바뀔 때만 (재사용이 어렵고 <code class="i">:hover</code>도 못 쓴다)</div>
+      </div>
+    </section>
+
+    <!-- ================= 5단계: 이벤트 ================= -->
+    <section class="slide split" data-topic="comp" id="st5">
+      <div class="left">
+        <figure class="code">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="fname">13-event.html · 응용</span></div>
+          <pre data-hl="12,19"><script type="text/plain">
+function MainCard() {
+  function handleHeartClick() {
+    console.log("하트 눌렀음");
+  }
+  return <button onClick={handleHeartClick}>🤍</button>;
+}
+
+function S1({ handleClick }) {
+  return (
+    <div>
+      <button onClick={handleClick}>✅ 클릭할 때 실행</button>
+      <button onClick={handleClick()}>❌ 렌더링될 때 바로 실행</button>
+      <button onClick={() => handleClick("인자")}>✅ 인자가 필요하면</button>
+    </div>
+  );
+}
+
+function handleFormSubmit(event) {
+  event.preventDefault(); // 새로고침(기본 동작) 막기
+}
+</script></pre>
+        </figure>
+      </div>
+      <div class="right">
+        <div class="kicker">5단계 · 13-event</div>
+        <h2>이벤트에는 함수를<br /><em>"전달"</em>한다</h2>
+        <div class="rules">
+          <div class="ok"><b>✅ 전달</b><code>onClick={handleClick}</code><br />클릭할 때 React가 호출</div>
+          <div class="bad"><b>❌ 호출</b><code>onClick={handleClick()}</code><br />렌더링 순간 실행 → 무한 렌더링 위험</div>
+        </div>
+        <ul class="pts">
+          <li>이벤트 속성은 camelCase: <code class="i">onClick</code> <code class="i">onSubmit</code> <code class="i">onMouseOver</code></li>
+          <li><code class="i">preventDefault()</code>가 없으면 폼 제출 때 새로고침 → state가 전부 초기화</li>
+          <li>이름은 <b>handle + 대상 + 이벤트</b>: <code class="i">handleHeartClick</code></li>
+        </ul>
+        <div class="callout">실험: <code class="i">preventDefault()</code>를 빼고 제출하면 콘솔 로그가 떴다가 사라진다</div>
+      </div>
+    </section>
+
+    <!-- ================= 6단계: useState ================= -->
+    <section class="slide split" data-topic="state" id="st6">
+      <div class="left">
+        <figure class="code">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="fname">14-state.html</span></div>
+          <pre data-hl="2,7"><script type="text/plain">
+const Form = () => {
+  const [counter, setCounter] = React.useState(1);
+  console.log("카운터", counter); // 제출할 때마다 다시 찍힘
+
+  function handleFormSubmit(event) {
+    event.preventDefault();
+    setCounter(counter + 1);
+  }
+
+  return (
+    <form onSubmit={handleFormSubmit}>
+      <input type="text" placeholder="영어 대사를 입력해주세요" />
+      <button type="submit">생성</button>
+    </form>
+  );
+};
+</script></pre>
+        </figure>
+      </div>
+      <div class="right">
+        <div class="kicker">6단계 · 14-state</div>
+        <h2>useState:<br /><em>기억하고, 다시 그리기</em></h2>
+        <table class="rule">
+          <tr><th>이름</th><th>역할</th></tr>
+          <tr><td>counter</td><td><b>지금 렌더링</b>에서의 값</td></tr>
+          <tr><td>setCounter</td><td>값을 바꾸고 <b>리렌더링을 요청</b>하는 함수</td></tr>
+          <tr><td>1</td><td>처음 한 번만 쓰이는 초기값</td></tr>
+        </table>
+        <div class="gap"></div>
+        <ul class="pts">
+          <li>일반 변수 <code class="i">let counter = 1</code>로는 안 되는 이유: ① 바꿔도 React가 다시 그리지 않고 ② 함수가 다시 실행될 때마다 1로 초기화된다</li>
+        </ul>
+        <div class="callout">state가 바뀌면 컴포넌트 함수 전체가 다시 실행된다 (3행 로그로 확인)</div>
+      </div>
+    </section>
+
+    <!-- ================= 6단계: 끌어올리기 ================= -->
+    <section class="slide split" data-topic="state">
+      <div class="left">
+        <figure class="code">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="fname">15-lifting-state-up.html</span></div>
+          <pre data-hl="2,10,11"><script type="text/plain">
+const App = () => {
+  const [counter, setCounter] = React.useState(1);
+
+  function handleFormSubmit() {
+    setCounter(counter + 1);
+  }
+
+  return (
+    <div>
+      <Title>{counter}번째 고양이 가라사대</Title>
+      <Form handleFormSubmit={handleFormSubmit} />
+      <MainCard img={CAT1} />
+      <Favorites />
+    </div>
+  );
+};
+</script></pre>
+        </figure>
+      </div>
+      <div class="right">
+        <div class="kicker">6단계 · 15-lifting-state-up · 16-quiz</div>
+        <h2>state 끌어올리기:<br /><em>공통 부모가 소유</em></h2>
+        <p class="lead">Title도 counter가 필요해졌습니다. 형제끼리는 데이터를 주고받을 수 없으니 state를 <b>공통 부모 App</b>으로 옮깁니다.</p>
+        <div class="tree">
+          <div class="root"><b>App</b><span>state: counter · mainCat</span></div>
+          <div class="links"><span class="down">↓ props로 데이터</span><span class="up">↑ 콜백 호출로 이벤트</span></div>
+          <div class="kids">
+            <div>Title</div>
+            <div>Form</div>
+            <div>MainCard</div>
+            <div>Favorites<small>└ CatItem × n</small></div>
+          </div>
+        </div>
+        <div class="callout biz">💼 state는 필요한 컴포넌트들의 <u>가장 가까운</u> 공통 부모에. 16번처럼 state는 여러 개 둘 수 있다</div>
+      </div>
+    </section>
+
+    <!-- ================= 6단계: set은 예약 ================= -->
+    <section class="slide split" data-topic="state">
+      <div class="left">
+        <figure class="code">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="fname">set-is-scheduled.js</span></div>
+          <pre data-hl="6,11"><script type="text/plain">
+const [counter, setCounter] = React.useState(1);
+
+function plusTwiceA() {
+  setCounter(counter + 1);   // 1 + 1 예약
+  setCounter(counter + 1);   // 1 + 1 예약 (counter는 아직 1)
+  console.log(counter);      // 1 ← 아직 이전 값
+}
+// 결과: 2
+
+function plusTwiceB() {
+  setCounter((prev) => prev + 1);   // 1 → 2
+  setCounter((prev) => prev + 1);   // 2 → 3
+}
+// 결과: 3
+</script></pre>
+        </figure>
+      </div>
+      <div class="right">
+        <div class="kicker">6단계 · 복습 포인트</div>
+        <h2>set 함수는 값을<br /><em>예약</em>할 뿐이다</h2>
+        <p class="lead"><code class="i">setCounter</code>는 값을 즉시 바꾸지 않고 <b>다음 렌더링에 쓸 값</b>을 예약합니다. 이번 렌더링의 <code class="i">counter</code>는 끝까지 그대로입니다.</p>
+        <div class="two">
+          <div><b>counter + 1 두 번 → 2</b>둘 다 "이번 렌더링의 1"을 보고 계산</div>
+          <div><b>prev =&gt; prev + 1 두 번 → 3</b>React가 바로 앞 결과를 prev로 넘겨줌</div>
+        </div>
+        <div class="callout">이전 값에 따라 다음 값이 정해지면 함수형 업데이트 (13단계에서 다시)</div>
+      </div>
+    </section>
+
+    <!-- ================= 7단계: 리스트 ================= -->
+    <section class="slide split" data-topic="state" id="st7">
+      <div class="left">
+        <figure class="code">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="fname">17-list · 18-state-prop-event-list</span></div>
+          <pre data-hl="5,14,15"><script type="text/plain">
+const App = () => {
+  const [favorites, setFavorites] = React.useState([CAT1, CAT2]);
+
+  function handleHeartClick() {
+    setFavorites([...favorites, CAT3]);
+  }
+  // ...
+  return <Favorites favorites={favorites} />;
+};
+
+function Favorites({ favorites }) {
+  return (
+    <ul className="favorites">
+      {favorites.map((cat) => (
+        <CatItem img={cat} key={cat} />
+      ))}
+    </ul>
+  );
+}
+</script></pre>
+        </figure>
+      </div>
+      <div class="right">
+        <div class="kicker">7단계 · 17-list · 18-state-prop-event-list</div>
+        <h2>리스트: <em>map</em>과<br /><em>key</em> 이름표</h2>
+        <div class="hchain">
+          <div class="box"><b>배열 state</b><code>[CAT1, CAT2]</code></div>
+          <div class="arr">›</div>
+          <div class="box"><b>map</b><code>cat =&gt; &lt;CatItem/&gt;</code></div>
+          <div class="arr">›</div>
+          <div class="box"><b>JSX 배열</b><code>&lt;CatItem/&gt; × n</code></div>
+        </div>
+        <div class="gap"></div>
+        <p class="lead"><code class="i">key</code>는 React가 어떤 항목이 추가·삭제·이동됐는지 알아보는 <b>이름표</b>입니다. 형제 사이에서 <b>유일하고</b>, 렌더링이 바뀌어도 <b>그대로</b>여야 합니다.</p>
+        <div class="callout warn">⚠ 18번에서 하트를 두 번 누르면 CAT3이 두 번 들어가 key 중복 → "same key" 경고</div>
+        <div class="callout biz">💼 <code class="i">key={index}</code>는 삭제·정렬되는 목록에서 버그. 서버가 주는 id처럼 안정적인 값을 쓴다</div>
+      </div>
+    </section>
+
+    <!-- ================= 7단계: 불변성 ================= -->
+    <section class="slide split" data-topic="state">
+      <div class="left">
+        <figure class="code">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="fname">immutability.js</span></div>
+          <pre data-hl="2,7"><script type="text/plain">
+function bad(cat) {
+  favorites.push(cat);        // 같은 배열을 직접 고침
+  setFavorites(favorites);    // 같은 참조 → 안 그릴 수 있음
+}
+
+function good(cat) {
+  setFavorites([...favorites, cat]);   // 새 배열
+}
+
+// React는 "참조가 바뀌었나"로 변경을 판단
+const a = [1, 2];
+a.push(3);
+a === a;             // true  → 그대로네?
+[...a, 4] === a;     // false → 바뀌었다!
+</script></pre>
+        </figure>
+      </div>
+      <div class="right">
+        <div class="kicker">7단계 · 불변성</div>
+        <h2>배열 state는<br /><em>새로 만들어서</em> 바꾼다</h2>
+        <div class="rules">
+          <div class="bad"><b>❌ push · splice · arr[0] = x</b>원본을 고친다<br />→ 같은 참조</div>
+          <div class="ok"><b>✅ [...arr, x] · filter · map</b>새 배열을 만든다<br />→ 새 참조</div>
+        </div>
+        <ul class="pts">
+          <li>객체도 같다: <code class="i">{ ...todo, done: true }</code></li>
+          <li>삭제는 <code class="i">filter</code>, 수정은 <code class="i">map</code> → 마지막 과제 "즐겨찾기 삭제"에서 사용</li>
+        </ul>
+        <div class="callout">고치지 말고, 새로 만들어서 통째로 교체한다</div>
+      </div>
+    </section>
+
+    <!-- ================= 8단계: 제어 컴포넌트 ================= -->
+    <section class="slide split" data-topic="form" id="st8">
+      <div class="left">
+        <figure class="code">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="fname">19-form.html</span></div>
+          <pre data-hl="5,12,13"><script type="text/plain">
+const Form = () => {
+  const [value, setValue] = React.useState("");
+
+  function handleInputChange(e) {
+    setValue(e.target.value.toUpperCase());
+  }
+
+  return (
+    <form>
+      <input
+        type="text"
+        value={value}
+        onChange={handleInputChange}
+      />
+    </form>
+  );
+};
+</script></pre>
+        </figure>
+      </div>
+      <div class="right">
+        <div class="kicker">8단계 · 19-form</div>
+        <h2>제어 컴포넌트:<br /><em>input 값을 state가 쥔다</em></h2>
+        <div class="hchain">
+          <div class="box"><b>① 입력</b><code>"a"</code></div>
+          <div class="arr">›</div>
+          <div class="box"><b>② onChange</b><code>e.target.value</code></div>
+          <div class="arr">›</div>
+          <div class="box"><b>③ setValue</b><code>"A"</code></div>
+          <div class="arr">›</div>
+          <div class="box"><b>④ 다시 그림</b><code>value="A"</code></div>
+        </div>
+        <div class="gap"></div>
+        <ul class="pts">
+          <li>화면에 보이는 값은 <b>항상 state</b> → <code class="i">toUpperCase()</code>처럼 가공해서 보여 줄 수 있다 (19번: 자동 대문자)</li>
+          <li>값이 state에 있으니 검사·초기화·전송이 쉽다</li>
+        </ul>
+        <div class="callout warn">⚠ <code class="i">value</code>만 주고 <code class="i">onChange</code>를 빼면 입력이 안 된다 (읽기 전용 경고). 두 속성은 항상 짝</div>
+      </div>
+    </section>
+
+    <!-- ================= 8단계: 유효성 검사 ================= -->
+    <section class="slide split" data-topic="form">
+      <div class="left">
+        <figure class="code">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="fname">20-form-validation.html · 검증</span></div>
+          <pre data-hl="3,6"><script type="text/plain">
+// 강의 코드 (20번)
+const includesHangul = (text) => /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/i.test(text);
+includesHangul("a|b");   // true  ❌ 한글이 없는데?
+
+// 대괄호 안의 | 는 "또는"이 아니라 파이프 문자 그 자체
+const fixed = (text) => /[ㄱ-ㅎㅏ-ㅣ가-힣]/.test(text);
+fixed("a|b");            // false ✅
+
+function handleFormSubmit(e) {
+  e.preventDefault();
+  if (value === "") {
+    setErrorMessage("빈 값으로 만들 수 없습니다.");
+    return;
+  }
+  // ⚠ 한글 검사는 입력 중에만 → 제출은 그대로 진행
+}
+</script></pre>
+        </figure>
+      </div>
+      <div class="right">
+        <div class="kicker">8단계 · 20-form-validation</div>
+        <h2>유효성 검사와<br /><em>정규식 함정</em></h2>
+        <p class="lead"><code class="i">errorMessage</code> state 하나를 두고 빨간 <code class="i">&lt;p&gt;</code>로 보여 줍니다.</p>
+        <div class="two">
+          <div><b>입력 중</b>한글이 들어오면 안내 메시지</div>
+          <div><b>제출 시</b>빈 값이면 에러 메시지</div>
+        </div>
+        <div class="callout warn">⚠ <code class="i">[ ]</code> 안의 <code class="i">|</code>는 "또는"이 아니다 → <code class="i">/[ㄱ-ㅎㅏ-ㅣ가-힣]/</code>. 한글엔 대소문자가 없어 <code class="i">i</code>도 불필요</div>
+        <div class="callout warn">⚠ 20번은 Form이 <code class="i">handleFormSubmit</code>을 받지 않아 제출해도 고양이가 안 바뀐다 → 21번에서 해결</div>
+        <div class="callout biz">💼 입력 중 검사(친절한 안내) + 제출 시 검사(최종 차단) + 서버에서 한 번 더</div>
+      </div>
+    </section>
+
+    <!-- ================= 9단계: 코드 정리 ================= -->
+    <section class="slide split" data-topic="form" id="st9">
+      <div class="left">
+        <figure class="code">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="fname">21-code-cleanup.html · 발췌</span></div>
+          <pre data-hl="2,15"><script type="text/plain">
+// 부모: 콜백 props는 onX, 처리 함수는 handleX
+<MainCard img={mainCat} onHeartClick={handleHeartClick} />
+<Form updateMainCat={updateMainCat} />
+
+// 자식: 받은 콜백을 이벤트에 연결
+const MainCard = ({ img, onHeartClick }) => (
+  <button onClick={onHeartClick}>🤍</button>
+);
+
+// 검사에 실패하면 일찍 빠져나가기 (early return)
+function handleFormSubmit(e) {
+  e.preventDefault();
+  if (value === "") {
+    setErrorMessage("빈 값으로 만들 수 없습니다.");
+    return;
+  }
+  updateMainCat();
+}
+</script></pre>
+        </figure>
+      </div>
+      <div class="right">
+        <div class="kicker">9단계 · 21-code-cleanup</div>
+        <h2>이름 규칙으로<br /><em>읽히는 코드</em> 만들기</h2>
+        <table class="rule">
+          <tr><th>이름</th><th>뜻</th></tr>
+          <tr><td>onX</td><td>부모가 넘기는 <b>콜백 props</b> · <code class="i">onHeartClick</code></td></tr>
+          <tr><td>handleX</td><td>이벤트를 <b>처리하는 함수</b> · <code class="i">handleHeartClick</code></td></tr>
+        </table>
+        <div class="gap"></div>
+        <ul class="pts">
+          <li><code class="i">onClick</code> 같은 내장 이벤트와 같은 규칙 → 내 컴포넌트도 HTML 태그처럼 읽힌다</li>
+          <li>검사에 실패하면 <code class="i">return</code>으로 일찍 빠져나가 중첩 if를 줄인다</li>
+        </ul>
+        <div class="callout biz">💼 Form은 "제출됐다(값은 이것)"만 알리고 무엇을 할지는 부모가 결정 → 완성본은 <code class="i">onSubmit</code>이라는 이름</div>
+      </div>
+    </section>
+
+    <!-- ================= 10단계: localStorage ================= -->
+    <section class="slide split" data-topic="data" id="st10">
+      <div class="left">
+        <figure class="code">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="fname">23-localstorage-2.html · 발췌</span></div>
+          <pre data-hl="3,6,17"><script type="text/plain">
+const jsonLocalStorage = {
+  setItem: (key, value) => {
+    localStorage.setItem(key, JSON.stringify(value));
+  },
+  getItem: (key) => {
+    return JSON.parse(localStorage.getItem(key));
+  },
+};
+
+const [counter, setCounter] = React.useState(
+  jsonLocalStorage.getItem("counter")
+);
+
+function handleFormSubmit() {
+  const nextCounter = counter + 1;                   // ① 다음 값 계산
+  setCounter(nextCounter);                           // ② state에 넣기
+  jsonLocalStorage.setItem("counter", nextCounter);  // ③ 저장소에도
+}
+</script></pre>
+        </figure>
+      </div>
+      <div class="right">
+        <div class="kicker">10단계 · 22-localstorage-1 · 23-localstorage-2</div>
+        <h2>localStorage로<br /><em>새로고침해도 기억</em></h2>
+        <p class="lead">localStorage는 <b>문자열만</b> 저장합니다. JSON으로 바꿔 저장하면 숫자·배열도 원래 타입 그대로 돌아옵니다.</p>
+        <div class="flow">
+          <div class="box">값<small>[CAT1, 3]</small></div>
+          <div class="arr">JSON.stringify</div>
+          <div class="box mid">문자열<small>'["…",3]'</small></div>
+          <div class="arr">JSON.parse</div>
+          <div class="box">값<small>[CAT1, 3]</small></div>
+        </div>
+        <ul class="pts">
+          <li>22번: <code class="i">Number(getItem(...))</code>으로 읽음 → 처음엔 <code class="i">Number(null)</code> = 0이라 "0번째"부터</li>
+          <li>23번: favorites도 저장, 없으면 <code class="i">|| []</code>. 하트는 이제 <b>현재 mainCat</b>을 저장</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ================= 10단계: 함정 ================= -->
+    <section class="slide split" data-topic="data">
+      <div class="left">
+        <figure class="code">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="fname">storage-traps.js</span></div>
+          <pre data-hl="6,11,14"><script type="text/plain">
+// 22번: 숫자로 읽기
+Number(localStorage.getItem("counter"));     // 처음엔 Number(null) → 0
+
+// 23번: JSON으로 읽기
+JSON.parse(localStorage.getItem("counter")); // 처음엔 null
+null + 1;   // 1 ← 암묵적 형변환으로 "우연히" 동작
+
+// 누군가 개발자 도구에서 값을 망가뜨리면?
+localStorage.setItem("favorites", "[깨진값");
+JSON.parse(localStorage.getItem("favorites"));
+// ❌ SyntaxError → 앱 전체가 멈춤
+
+// 렌더링할 때마다 localStorage를 다시 읽음
+React.useState(jsonLocalStorage.getItem("favorites") || []);
+</script></pre>
+        </figure>
+      </div>
+      <div class="right">
+        <div class="kicker">10단계 · 복습 포인트</div>
+        <h2>localStorage의<br /><em>숨은 함정 3가지</em></h2>
+        <ol class="steps">
+          <li><b>null이 섞인다</b> — 처음 방문하면 counter가 null. <code class="i">null + 1</code> = 1이라 우연히 동작<span class="chip">12단계</span></li>
+          <li><b>깨진 값</b>이면 <code class="i">JSON.parse</code>가 예외 → <code class="i">try/catch</code>로 감싼다<span class="chip">완성본 ①</span></li>
+          <li><b>매 렌더링마다</b> localStorage를 읽는다<span class="chip">13단계 지연 초기화</span></li>
+        </ol>
+        <div class="callout biz">💼 "state 바꾸기 + 저장하기"를 두 줄씩 쓰면 한쪽을 빠뜨린다 → 저장 로직을 커스텀 훅 하나로 모은다 (완성본 ③)</div>
+      </div>
+    </section>
+
+    <!-- ================= 11단계: fetch ================= -->
+    <section class="slide split" data-topic="data" id="st11">
+      <div class="left">
+        <figure class="code">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="fname">29-useEffect.html · 발췌</span></div>
+          <pre data-hl="3,6,11"><script type="text/plain">
+const fetchCat = async (text) => {
+  const OPEN_API_DOMAIN = "https://cataas.com";
+  const response = await fetch(
+    `${OPEN_API_DOMAIN}/cat/says/${text}?json=true`
+  );
+  const responseJson = await response.json();
+  return `${OPEN_API_DOMAIN}/cat/${responseJson._id}/says/${text}`;
+};
+
+async function updateMainCat(value) {
+  const newCat = await fetchCat(value);
+  setMainCat(newCat);
+}
+
+encodeURIComponent("HI/THERE?#");   // "HI%2FTHERE%3F%23"
+</script></pre>
+        </figure>
+      </div>
+      <div class="right">
+        <div class="kicker">11단계 · 28-api · 29-useEffect</div>
+        <h2>fetch와<br /><em>async / await</em></h2>
+        <ol class="steps">
+          <li><code class="i">await fetch(...)</code>로 응답을 기다린다</li>
+          <li><code class="i">await response.json()</code>으로 JSON을 꺼낸다</li>
+          <li>받은 <code class="i">_id</code>로 이미지 URL을 만들어 반환한다</li>
+        </ol>
+        <ul class="pts">
+          <li><code class="i">fetchCat</code>이 컴포넌트 밖에 있는 건 좋은 습관 — 화면과 상관없는 로직은 분리</li>
+          <li>28번은 바뀐 API 흔적이 남아 있으니 <b>29번(cataas) 기준</b>으로 본다</li>
+        </ul>
+        <div class="callout warn">⚠ 에러 처리가 없다 → <code class="i">response.ok</code> 확인 + <code class="i">try/catch</code></div>
+        <div class="callout warn">⚠ 대사의 <code class="i">/ ? #</code>가 URL을 깨뜨린다 → <code class="i">encodeURIComponent</code></div>
+      </div>
+    </section>
+
+    <!-- ================= 11단계: useEffect ================= -->
+    <section class="slide split" data-topic="data">
+      <div class="left">
+        <figure class="code">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="fname">29-useEffect.html · 비교</span></div>
+          <pre data-hl="2,7"><script type="text/plain">
+// ❌ effect 함수 자체를 async로
+React.useEffect(async () => {
+  await fetchCat("First cat");
+}, []);
+
+// ✅ 안에서 async 함수를 만들어 호출 (29번 방식)
+React.useEffect(() => {
+  async function setInitialCat() {
+    const newCat = await fetchCat("First cat");
+    setMainCat(newCat);
+  }
+  setInitialCat();
+}, []);
+</script></pre>
+        </figure>
+      </div>
+      <div class="right">
+        <div class="kicker">11단계 · 29-useEffect</div>
+        <h2>useEffect:<br /><em>렌더링이 끝난 뒤</em>에 할 일</h2>
+        <p class="lead">API 호출·구독·저장처럼 화면 그리기 밖의 일(<b>부수 효과</b>)을 등록합니다.</p>
+        <table class="rule">
+          <tr><th>의존성 배열</th><th>실행 시점</th></tr>
+          <tr><td>생략</td><td>렌더링될 때마다</td></tr>
+          <tr><td>[]</td><td>처음 화면에 나타날 때 <b>한 번</b> (29번)</td></tr>
+          <tr><td>[a, b]</td><td>처음 + a나 b가 바뀔 때마다</td></tr>
+        </table>
+        <div class="callout warn">⚠ effect는 cleanup 함수나 아무것도 반환하지 않아야 한다. async 함수는 항상 Promise를 반환 → 안에서 만들어 호출</div>
+      </div>
+    </section>
+
+    <!-- ================= 11단계: cleanup ================= -->
+    <section class="slide split" data-topic="data">
+      <div class="left">
+        <figure class="code">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="fname">effect-cleanup.js</span></div>
+          <pre data-hl="5,9"><script type="text/plain">
+React.useEffect(() => {
+  let ignore = false;
+
+  fetchCat("First cat").then((newCat) => {
+    if (!ignore) setMainCat(newCat);
+  });
+
+  return () => {
+    ignore = true; // cleanup: 화면에서 사라지면 응답 무시
+  };
+}, []);
+</script></pre>
+        </figure>
+      </div>
+      <div class="right">
+        <div class="kicker">11단계 · 💼 실무</div>
+        <h2>StrictMode와<br /><em>cleanup 함수</em></h2>
+        <p class="lead">개발 모드의 <code class="i">&lt;React.StrictMode&gt;</code>는 버그를 찾으려고 effect를 <b>일부러 두 번</b> 실행합니다 (CRA의 index.js가 사용).</p>
+        <ol class="steps">
+          <li>마운트 → effect 실행 → 요청 ①</li>
+          <li>일부러 언마운트 → cleanup: <code class="i">ignore = true</code></li>
+          <li>다시 마운트 → effect 실행 → 요청 ②</li>
+          <li>요청 ①의 응답은 무시, ②만 화면에 반영</li>
+        </ol>
+        <div class="callout biz">💼 실무에선 TanStack Query 같은 라이브러리로 로딩·에러·캐시를 관리한다. 그래도 원리는 useEffect + fetch</div>
+      </div>
+    </section>
+
+    <!-- ================= 12단계: 조건부 렌더링 ================= -->
+    <section class="slide split" data-topic="deep" id="st12">
+      <div class="left">
+        <figure class="code">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="fname">31 · 32-conditional-rendering</span></div>
+          <pre data-hl="3,10,16"><script type="text/plain">
+// ① early return
+function Favorites({ favorites }) {
+  if (favorites.length === 0) {
+    return <div>사진 위 하트를 눌러 고양이 사진을 저장해봐요!</div>;
+  }
+  return <ul className="favorites">...</ul>;
+}
+
+// ② 삼항 연산자
+const heartIcon = alreadyFavorite ? "💖" : "🤍";
+
+// ③ && : 참일 때만 보여 주기
+{errorMessage && <p>{errorMessage}</p>}
+
+// 32번 퀴즈: 처음 방문(null)이면 "N번째" 빼기
+const counterTitle = counter === null ? "" : counter + "번째 ";
+</script></pre>
+        </figure>
+      </div>
+      <div class="right">
+        <div class="kicker">12단계 · 31-conditional-rendering · 32-quiz</div>
+        <h2>조건부 렌더링<br /><em>세 가지 방법</em></h2>
+        <table class="rule">
+          <tr><th>방법</th><th>언제 쓰나</th></tr>
+          <tr><td>early return</td><td>아예 <b>다른 화면</b>을 보여 줄 때</td></tr>
+          <tr><td>A ? B : C</td><td>둘 중 <b>하나를 고를</b> 때</td></tr>
+          <tr><td>A &amp;&amp; B</td><td>참일 때<b>만</b> 보여 줄 때</td></tr>
+        </table>
+        <div class="callout"><b>파생 값</b>: <code class="i">favorites.includes(mainCat)</code>처럼 이미 있는 state로 계산할 수 있는 값은 state로 만들지 않고 렌더링할 때마다 계산한다</div>
+      </div>
+    </section>
+
+    <!-- ================= 12단계: && 0 함정 ================= -->
+    <section class="slide split" data-topic="deep">
+      <div class="left">
+        <figure class="code">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="fname">zero-trap.jsx</span></div>
+          <pre data-hl="4,5,13"><script type="text/plain">
+function S3({ favorites }) {
+  return (
+    <div>
+      {favorites.length && <p>저장한 고양이가 있어요</p>}
+      {favorites.length > 0 && <p>저장한 고양이가 있어요</p>}
+    </div>
+  );
+}
+
+0 && "x";   // 0 → React는 숫자 0을 화면에 그대로 그린다
+
+// 파생 값: state로 만들지 않고 렌더링할 때 계산
+const alreadyFavorite = favorites.includes(mainCat);
+</script></pre>
+        </figure>
+      </div>
+      <div class="right">
+        <div class="kicker">12단계 · 복습 포인트</div>
+        <h2><em>&amp;&amp;와 숫자 0</em> 함정,<br />그리고 파생 값</h2>
+        <div class="rules">
+          <div class="bad"><b>❌ length &amp;&amp;</b>0이면 화면에 "0"이 찍힌다</div>
+          <div class="ok"><b>✅ length &gt; 0 &amp;&amp;</b>진짜 불리언으로 비교한다</div>
+        </div>
+        <ul class="pts">
+          <li><code class="i">alreadyFavorite</code>를 useState로 따로 두면 favorites가 바뀔 때마다 같이 바꿔야 하고, 둘이 <b>어긋나는 버그</b>가 생긴다</li>
+          <li>"계산할 수 있으면 state가 아니다"</li>
+        </ul>
+        <div class="callout warn">⚠ 💖가 돼도 다시 누르면 같은 고양이가 또 추가 → key 중복. 💼 가드(무시)나 토글(취소)이 필요</div>
+      </div>
+    </section>
+
+    <!-- ================= 13단계: 지연 초기화 ================= -->
+    <section class="slide split" data-topic="deep" id="st13">
+      <div class="left">
+        <figure class="code">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="fname">33-setState-deep-dive · 비교</span></div>
+          <pre data-hl="4,9"><script type="text/plain">
+function S8() {
+  // a: 렌더링할 때마다 getItem 실행 (결과는 버려짐)
+  const [a] = React.useState(
+    jsonLocalStorage.getItem("favorites") || []
+  );
+
+  // b: 첫 렌더링 때 딱 한 번만 실행
+  const [b] = React.useState(
+    () => jsonLocalStorage.getItem("favorites") || []
+  );
+  return null;
+}
+</script></pre>
+        </figure>
+      </div>
+      <div class="right">
+        <div class="kicker">13단계 · 33-setState-deep-dive</div>
+        <h2>지연 초기화:<br /><em>함수를 넘기면 한 번만</em></h2>
+        <p class="lead"><code class="i">useState(() =&gt; 초기값계산())</code>처럼 <b>함수</b>를 넘기면 React가 첫 렌더링 때만 호출합니다.</p>
+        <table class="rule">
+          <tr><th></th><th>1번째 렌더링</th><th>2번째</th><th>3번째</th></tr>
+          <tr><td>a (값)</td><td><b>읽음 · 사용</b></td><td>읽음 · 버림</td><td>읽음 · 버림</td></tr>
+          <tr><td>b (함수)</td><td><b>읽음 · 사용</b></td><td>—</td><td>—</td></tr>
+        </table>
+        <div class="callout">localStorage 읽기·큰 계산처럼 비용이 드는 초기값에 쓴다</div>
+      </div>
+    </section>
+
+    <!-- ================= 13단계: 함수형 업데이트 ================= -->
+    <section class="slide split" data-topic="deep">
+      <div class="left">
+        <figure class="code">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="fname">33-setState-deep-dive · 응용</span></div>
+          <pre data-hl="5,6"><script type="text/plain">
+async function updateMainCat(value) {
+  const newCat = await fetchCat(value);  // ⏳ 기다리는 동안
+  setMainCat(newCat);                     //    다른 렌더링이 일어날 수 있다
+
+  setCounter(counter + 1);          // ❌ 함수가 시작될 때의 counter
+  setCounter((prev) => prev + 1);   // ✅ React가 넘겨주는 최신 값
+}
+
+// 빠르게 두 번 제출하면? (counter = 3에서 시작)
+// ❌ 두 호출 모두 counter = 3을 기억 → 둘 다 4로 설정 → 결과 4
+// ✅ prev 방식: 3 → 4 → 5 → 결과 5
+</script></pre>
+        </figure>
+      </div>
+      <div class="right">
+        <div class="kicker">13단계 · 33-setState-deep-dive</div>
+        <h2>함수형 업데이트:<br /><em>항상 최신 값으로</em></h2>
+        <p class="lead">함수 안의 <code class="i">counter</code>는 함수가 시작될 때의 값으로 <b>고정(클로저)</b>됩니다. <code class="i">await</code> 뒤에서는 이미 오래된 값일 수 있습니다.</p>
+        <ol class="steps">
+          <li>첫 번째 제출: counter = 3을 기억하고 await</li>
+          <li>두 번째 제출: 역시 counter = 3을 기억하고 await</li>
+          <li>응답 도착 → 둘 다 3 + 1 = 4로 설정 → 한 번이 사라짐</li>
+          <li><code class="i">prev</code> 방식이면 React가 최신 값을 넘겨 3 → 4 → 5</li>
+        </ol>
+        <div class="callout">6단계의 "두 번 호출하면 2 vs 3"과 같은 원리</div>
+      </div>
+    </section>
+
+    <!-- ================= 13단계: 순수한 업데이트 함수 ================= -->
+    <section class="slide split" data-topic="deep">
+      <div class="left">
+        <figure class="code">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="fname">pure-updater.js</span></div>
+          <pre data-hl="8,18"><script type="text/plain">
+function S5() {
+  const [counter, setCounter] = React.useState(0);
+
+  // ❌ 33번: 업데이트 함수 안에서 저장 (부수 효과)
+  function bad() {
+    setCounter((prev) => {
+      const nextCounter = prev + 1;
+      jsonLocalStorage.setItem("counter", nextCounter);
+      return nextCounter;
+    });
+  }
+
+  // ✅ 계산만 하고, 저장은 useEffect로 분리
+  function good() {
+    setCounter((prev) => prev + 1);
+  }
+  React.useEffect(() => {
+    jsonLocalStorage.setItem("counter", counter);
+  }, [counter]);
+  return null;
+}
+</script></pre>
+        </figure>
+      </div>
+      <div class="right">
+        <div class="kicker">13단계 · 복습 포인트</div>
+        <h2>업데이트 함수는<br /><em>순수하게</em></h2>
+        <p class="lead">업데이트 함수는 <b>계산만 하는 순수 함수</b>여야 합니다. StrictMode 개발 모드에서는 업데이트 함수도 <b>두 번</b> 호출됩니다.</p>
+        <div class="rules">
+          <div class="bad"><b>❌ 업데이트 함수 안</b>저장 · 요청 같은 부수 효과</div>
+          <div class="ok"><b>✅ 이벤트 핸들러 · useEffect</b>부수 효과는 여기로</div>
+        </div>
+        <ul class="pts">
+          <li>33번은 같은 값을 두 번 저장할 뿐이라 티가 안 나지만, 좋은 습관은 아니다</li>
+        </ul>
+        <div class="callout">규칙 하나: 다음 값이 이전 값에 따라 정해지면 함수형 업데이트 → <code class="i">setFavorites((prev) =&gt; [...prev, mainCat])</code></div>
+      </div>
+    </section>
+
+    <!-- ================= 14단계: 진짜 프로젝트 ================= -->
+    <section class="slide split" data-topic="final" id="st14">
+      <div class="left">
+        <figure class="code">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="fname">cat-jjal-maker-cra/src</span></div>
+          <pre data-hl="5,8,12"><script type="text/plain">
+// src/components/Title.js
+const Title = (props) => {
+  return <h1>{props.children}</h1>;
+};
+export default Title;
+
+// src/App.js
+import Title from "./components/Title";
+
+// src/index.js
+ReactDOM.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
+  document.getElementById("root")
+);
+</script></pre>
+        </figure>
+      </div>
+      <div class="right">
+        <div class="kicker">14단계 · cat-jjal-maker-cra</div>
+        <h2>파일로 나누는<br /><em>진짜 프로젝트</em></h2>
+        <p class="lead">한 HTML 파일의 코드를 <b>파일 단위</b>로 나누고 <code class="i">export</code> / <code class="i">import</code>로 연결합니다.</p>
+        <table class="rule">
+          <tr><th>명령</th><th>하는 일</th></tr>
+          <tr><td>npm start</td><td>개발 서버</td></tr>
+          <tr><td>npm run build</td><td><b>배포용 파일</b> 생성</td></tr>
+          <tr><td>npm run deploy</td><td>gh-pages로 GitHub Pages에 배포</td></tr>
+        </table>
+        <div class="gap"></div>
+        <ul class="pts">
+          <li>빌드 도구가 JSX를 <b>미리</b> 변환 → 브라우저에 Babel이 필요 없고, 빠르고, 에러도 일찍 발견</li>
+        </ul>
+        <div class="callout biz">💼 CRA는 2025년 공식 지원 종료. 새 프로젝트는 Vite(가벼운 SPA)나 Next.js로 시작한다</div>
+      </div>
+    </section>
+
+    <!-- ================= 14단계: Vite 폴더 구조 ================= -->
+    <section class="slide split" data-topic="final">
+      <div class="left">
+        <figure class="code">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="fname">terminal · 폴더 구조</span></div>
+          <pre data-hl="2"><script type="text/plain">
+# 새 프로젝트는 Vite로
+npm create vite@latest cat-jjal-maker -- --template react
+
+# 실무형 폴더 구조 (정답이 아닌 출발점)
+src/
+  api/cat.js                     # fetchCat (네트워크)
+  utils/storage.js               # jsonLocalStorage
+  utils/validation.js            # includesHangul
+  hooks/useLocalStorageState.js
+  components/
+    Title.jsx  Form.jsx  MainCard.jsx  Favorites.jsx
+  App.jsx
+</script></pre>
+        </figure>
+      </div>
+      <div class="right">
+        <div class="kicker">14단계 · 💼 실무</div>
+        <h2>Vite로 시작하는<br /><em>실무형 폴더 구조</em></h2>
+        <table class="rule">
+          <tr><th>폴더</th><th>담는 것</th></tr>
+          <tr><td>api/</td><td><b>네트워크 요청</b> (fetchCat)</td></tr>
+          <tr><td>utils/</td><td>React와 상관없는 <b>순수 함수</b></td></tr>
+          <tr><td>hooks/</td><td><b>커스텀 훅</b> (use로 시작)</td></tr>
+          <tr><td>components/</td><td><b>화면 조각</b> (.jsx)</td></tr>
+        </table>
+        <div class="gap"></div>
+        <ul class="pts">
+          <li>역할별로 나누면 "이 코드 어디 있지?"를 폴더 이름으로 찾는다</li>
+          <li><code class="i">utils</code>·<code class="i">api</code>는 React 없이도 테스트할 수 있다</li>
+        </ul>
+        <div class="callout biz">💼 ESLint의 react-hooks 규칙을 켜 두면 useEffect 의존성 배열 실수를 자동으로 잡는다</div>
+      </div>
+    </section>
+
+    <!-- ================= 완성본 개요 ================= -->
+    <section class="slide full" data-topic="final">
+      <div>
+        <div class="summary-head">
+          <div class="kicker">실무형 리팩터링 완성본</div>
+          <h2>강의 코드 → <em>이렇게 고쳤다</em></h2>
+          <span class="aside">tsc로 JSX 문법만 검사 · 외부 API 의존이라 실행 결과는 미확인 · <code class="i">??</code> <code class="i">?.</code> <code class="i">&lt;&gt;</code> 없이 작성</span>
+        </div>
+        <div class="tablewrap"><table class="map">
+          <tr><th>강의 코드의 문제</th><th>완성본에서 바꾼 점</th><th>코드</th></tr>
+          <tr><td class="bad">정규식 안의 <code>|</code> 버그</td><td class="good"><code>/[ㄱ-ㅎㅏ-ㅣ가-힣]/</code></td><td class="f">①</td></tr>
+          <tr><td class="bad">깨진 localStorage 값으로 앱이 멈춤</td><td class="good"><code>getItem</code>에 <code>try/catch</code></td><td class="f">①</td></tr>
+          <tr><td class="bad">상수가 컴포넌트 안에 있음</td><td class="good">컴포넌트 밖으로 이동</td><td class="f">①</td></tr>
+          <tr><td class="bad">API 실패 시 조용히 멈춤</td><td class="good"><code>response.ok</code> 확인 + Form에서 에러 메시지</td><td class="f">② ④</td></tr>
+          <tr><td class="bad">대사의 특수문자가 URL을 깨뜨림</td><td class="good"><code>encodeURIComponent</code></td><td class="f">②</td></tr>
+          <tr><td class="bad">state + 저장 코드가 두 줄씩 중복</td><td class="good"><code>useLocalStorageState</code> 커스텀 훅 + useEffect</td><td class="f">③</td></tr>
+          <tr><td class="bad">counter가 null일 수 있음</td><td class="good">초기값 0으로 통일</td><td class="f">③ ⑥</td></tr>
+          <tr><td class="bad">한글이 있어도 제출됨</td><td class="good">제출할 때도 한글 검사</td><td class="f">④</td></tr>
+          <tr><td class="bad">img에 alt 없음, 하트 버튼이 이모지뿐</td><td class="good"><code>alt</code>, <code>aria-label</code> 추가 (접근성)</td><td class="f">⑤</td></tr>
+          <tr><td class="bad">StrictMode에서 effect 두 번 실행</td><td class="good">cleanup의 <code>ignore</code> 플래그</td><td class="f">⑥</td></tr>
+          <tr><td class="bad">오래된 counter 값을 쓸 위험</td><td class="good"><code>setCounter((prev) =&gt; prev + 1)</code></td><td class="f">⑦</td></tr>
+          <tr><td class="bad">같은 고양이 중복 저장 → key 중복</td><td class="good"><code>alreadyFavorite</code>면 저장하지 않음</td><td class="f">⑦</td></tr>
+        </table></div>
+      </div>
+    </section>
+
+    <!-- ================= 완성본 ① ================= -->
+    <section class="slide split" data-topic="final">
+      <div class="left">
+        <figure class="code">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="fname">완성본 ① · 컴포넌트 바깥</span></div>
+          <pre data-hl="5,12,15"><script type="text/plain">
+// 렌더링과 상관없는 상수 · 순수 함수는 컴포넌트 밖에
+const CAT1 = "https://cataas.com/cat/HSENVDU4ZMqy7KQ0/says/react";
+const OPEN_API_DOMAIN = "https://cataas.com";
+
+const includesHangul = (text) => /[ㄱ-ㅎㅏ-ㅣ가-힣]/.test(text);
+
+const jsonLocalStorage = {
+  setItem: (key, value) => {
+    localStorage.setItem(key, JSON.stringify(value));
+  },
+  getItem: (key) => {
+    try {
+      return JSON.parse(localStorage.getItem(key));
+    } catch (error) {
+      return null; // 깨진 값이어도 앱이 죽지 않게
+    }
+  },
+};
+</script></pre>
+        </figure>
+      </div>
+      <div class="right">
+        <div class="kicker">완성본 ① · 컴포넌트 바깥</div>
+        <h2>React와 상관없는 코드는<br /><em>바깥으로</em></h2>
+        <p class="lead">상수·검사·저장소는 화면과 상관없습니다. 컴포넌트 밖에 두면 <b>렌더링마다 다시 만들지 않고</b>, React 없이도 테스트할 수 있습니다.</p>
+        <ul class="pts">
+          <li><code class="i">CAT1</code>을 App 안에서 밖으로 → 렌더링할 때마다 다시 만들지 않는다</li>
+          <li>정규식에서 <code class="i">|</code>와 <code class="i">i</code>를 뺐다 → <code class="i">"a|b"</code>를 한글로 오판하지 않는다</li>
+          <li><code class="i">getItem</code>을 <code class="i">try/catch</code>로 감싸 깨진 값이면 <code class="i">null</code> → 앱이 멈추지 않는다</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ================= 완성본 ② ================= -->
+    <section class="slide split" data-topic="final">
+      <div class="left">
+        <figure class="code">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="fname">완성본 ② · fetchCat</span></div>
+          <pre data-hl="2,6,7"><script type="text/plain">
+const fetchCat = async (text) => {
+  const encodedText = encodeURIComponent(text);
+  const response = await fetch(
+    `${OPEN_API_DOMAIN}/cat/says/${encodedText}?json=true`
+  );
+  if (!response.ok) {
+    throw new Error("고양이를 불러오지 못했어요. 잠시 후 다시 시도해주세요.");
+  }
+  const responseJson = await response.json();
+  return `${OPEN_API_DOMAIN}/cat/${responseJson._id}/says/${encodedText}`;
+};
+</script></pre>
+        </figure>
+      </div>
+      <div class="right">
+        <div class="kicker">완성본 ② · fetchCat</div>
+        <h2>요청은 <em>안전하게</em>,<br />실패는 <em>알리게</em></h2>
+        <ol class="steps">
+          <li><code class="i">encodeURIComponent</code>로 <code class="i">/ ? #</code> 같은 문자를 안전하게 바꾼다</li>
+          <li><code class="i">response.ok</code>가 false면(404·500) <code class="i">Error</code>를 던진다</li>
+          <li>던진 에러는 호출한 쪽(Form)의 <code class="i">catch</code>에서 메시지로 보여 준다<span class="chip">완성본 ④</span></li>
+        </ol>
+        <div class="callout warn">⚠ <code class="i">fetch</code>는 404·500 응답에서도 실패(reject)하지 않는다. 네트워크가 끊겼을 때만 실패 → <code class="i">ok</code> 확인은 직접 해야 한다</div>
+      </div>
+    </section>
+
+    <!-- ================= 완성본 ③ ================= -->
+    <section class="slide split" data-topic="final">
+      <div class="left">
+        <figure class="code">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="fname">완성본 ③ · 커스텀 훅</span></div>
+          <pre data-hl="2,7,15"><script type="text/plain">
+function useLocalStorageState(key, initialValue) {
+  const [value, setValue] = React.useState(() => {
+    const saved = jsonLocalStorage.getItem(key);
+    return saved !== null ? saved : initialValue;
+  });
+
+  React.useEffect(() => {
+    jsonLocalStorage.setItem(key, value);
+  }, [key, value]);
+
+  return [value, setValue];
+}
+
+// 사용: useState처럼 쓰는데 저장까지 된다
+const [counter, setCounter] = useLocalStorageState("counter", 0);
+const [favorites, setFavorites] = useLocalStorageState("favorites", []);
+</script></pre>
+        </figure>
+      </div>
+      <div class="right">
+        <div class="kicker">완성본 ③ · 커스텀 훅</div>
+        <h2>"저장되는 state"라는<br /><em>새 도구</em> 만들기</h2>
+        <div class="hchain">
+          <div class="box"><b>useState</b><code>지연 초기화로 읽기</code></div>
+          <div class="arr">+</div>
+          <div class="box"><b>useEffect</b><code>바뀌면 저장</code></div>
+          <div class="arr">=</div>
+          <div class="box"><b>use&shy;LocalStorage&shy;State</b></div>
+        </div>
+        <div class="gap"></div>
+        <ul class="pts">
+          <li>이름이 <code class="i">use</code>로 시작하는 함수 = 커스텀 훅 (안에서 훅을 쓸 수 있다)</li>
+          <li>state와 저장이 한곳에 → "저장을 빠뜨리는" 실수가 사라진다</li>
+          <li><code class="i">saved !== null</code>로 비교 → 저장된 <code class="i">0</code>·<code class="i">false</code>·<code class="i">""</code>도 살린다 (<code class="i">||</code>는 기본값으로 덮어쓴다)</li>
+        </ul>
+        <div class="callout">counter 초기값을 0으로 통일 → null 처리 걱정이 없다</div>
+      </div>
+    </section>
+
+    <!-- ================= 완성본 ④ ================= -->
+    <section class="slide split" data-topic="final">
+      <div class="left">
+        <figure class="code">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="fname">완성본 ④ · Form 발췌</span></div>
+          <pre data-hl="13,19,21"><script type="text/plain">
+function handleInputChange(e) {
+  const userValue = e.target.value;
+  setErrorMessage(includesHangul(userValue) ? "한글은 입력할 수 없습니다." : "");
+  setValue(userValue.toUpperCase());
+}
+
+async function handleFormSubmit(e) {
+  e.preventDefault();
+  if (value === "") {
+    setErrorMessage("빈 값으로 만들 수 없습니다.");
+    return;
+  }
+  if (includesHangul(value)) {
+    setErrorMessage("한글은 입력할 수 없습니다.");
+    return;
+  }
+  setErrorMessage("");
+  try {
+    await onSubmit(value);
+  } catch (error) {
+    setErrorMessage(error.message);
+  }
+}
+</script></pre>
+        </figure>
+      </div>
+      <div class="right">
+        <div class="kicker">완성본 ④ · Form</div>
+        <h2>입력 중엔 <em>안내</em>,<br />제출 땐 <em>차단</em></h2>
+        <ol class="steps">
+          <li>입력 중: 한글이면 안내 메시지<span class="chip">3행</span></li>
+          <li>제출 시: 빈 값이면 차단<span class="chip">9행</span></li>
+          <li>제출 시: 한글이면 차단 — 강의 코드엔 없던 검사<span class="chip">13행</span></li>
+          <li>통과하면 <code class="i">onSubmit(value)</code>, 실패하면 에러 메시지 표시<span class="chip">18~22행</span></li>
+        </ol>
+        <div class="callout biz">💼 Form은 <code class="i">updateMainCat</code>이 아니라 <code class="i">onSubmit</code>을 받는다 → 값으로 무엇을 할지는 부모가 결정 (재사용이 쉬움)</div>
+      </div>
+    </section>
+
+    <!-- ================= 완성본 ⑤ ================= -->
+    <section class="slide split" data-topic="final">
+      <div class="left">
+        <figure class="code">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="fname">완성본 ⑤ · MainCard · CatItem</span></div>
+          <pre data-hl="5,8,19"><script type="text/plain">
+const MainCard = ({ img, onHeartClick, alreadyFavorite }) => {
+  const heartIcon = alreadyFavorite ? "💖" : "🤍";
+  return (
+    <div className="main-card">
+      <img src={img} alt="고양이" width="400" />
+      <button
+        onClick={onHeartClick}
+        aria-label={alreadyFavorite ? "이미 저장한 고양이" : "고양이 저장하기"}
+      >
+        {heartIcon}
+      </button>
+    </div>
+  );
+};
+
+const CatItem = ({ img }) => {
+  return (
+    <li>
+      <img src={img} alt="저장한 고양이" style={{ width: "150px" }} />
+    </li>
+  );
+};
+</script></pre>
+        </figure>
+      </div>
+      <div class="right">
+        <div class="kicker">완성본 ⑤ · MainCard · CatItem</div>
+        <h2>화면을 못 보는 사람도<br /><em>쓸 수 있게</em></h2>
+        <p class="lead">화면 낭독기(스크린 리더)는 이모지 🤍만으로는 버튼의 뜻을 알기 어렵습니다.</p>
+        <table class="rule">
+          <tr><th>속성</th><th>역할</th></tr>
+          <tr><td>alt</td><td>이미지를 볼 수 없을 때 <b>대신 읽히는 설명</b></td></tr>
+          <tr><td>aria-label</td><td>버튼의 뜻을 <b>글자로</b> 알려 줌 (상태에 따라 바뀜)</td></tr>
+        </table>
+        <div class="gap"></div>
+        <ul class="pts">
+          <li>강의 코드의 CatItem <code class="i">img</code>에는 alt가 없었다</li>
+          <li>접근성 속성도 props·state로 바꿀 수 있다 (8행)</li>
+        </ul>
+        <div class="callout biz">💼 접근성은 "나중에"가 아니라 태그를 쓸 때 같이</div>
+      </div>
+    </section>
+
+    <!-- ================= 완성본 ⑥ ================= -->
+    <section class="slide split" data-topic="final">
+      <div class="left">
+        <figure class="code">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="fname">완성본 ⑥ · App (state · effect)</span></div>
+          <pre data-hl="7,8,14"><script type="text/plain">
+const App = () => {
+  const [counter, setCounter] = useLocalStorageState("counter", 0);
+  const [favorites, setFavorites] = useLocalStorageState("favorites", []);
+  const [mainCat, setMainCat] = React.useState(CAT1);
+
+  // 파생 값: state에서 계산할 수 있으면 state로 만들지 않는다
+  const alreadyFavorite = favorites.includes(mainCat);
+  const counterTitle = counter === 0 ? "" : counter + "번째 ";
+
+  React.useEffect(() => {
+    let ignore = false; // 사라진 뒤 도착한 응답은 무시
+    fetchCat("First cat")
+      .then((newCat) => {
+        if (!ignore) setMainCat(newCat);
+      })
+      .catch((error) => console.error(error));
+    return () => {
+      ignore = true;
+    };
+  }, []);
+</script></pre>
+        </figure>
+      </div>
+      <div class="right">
+        <div class="kicker">완성본 ⑥ · App (state · effect)</div>
+        <h2>App: state를 쥐고<br /><em>계산은 그때그때</em></h2>
+        <table class="rule">
+          <tr><th>종류</th><th>이름</th></tr>
+          <tr><td>저장되는 state</td><td><b>counter · favorites</b></td></tr>
+          <tr><td>일반 state</td><td><b>mainCat</b></td></tr>
+          <tr><td>파생 값</td><td><b>alreadyFavorite · counterTitle</b></td></tr>
+        </table>
+        <div class="gap"></div>
+        <ul class="pts">
+          <li>첫 고양이 로딩은 <code class="i">useEffect</code> + cleanup(<code class="i">ignore</code>) → StrictMode가 두 번 실행해도 안전</li>
+          <li>첫 로딩이 실패하면 <code class="i">.catch</code>로 콘솔에 남기고, 화면은 CAT1으로 계속</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ================= 완성본 ⑦ ================= -->
+    <section class="slide split" data-topic="final">
+      <div class="left">
+        <figure class="code">
+          <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="fname">완성본 ⑦ · App (이벤트 · 조립)</span></div>
+          <pre data-hl="4,8,9"><script type="text/plain">
+  async function updateMainCat(value) {
+    const newCat = await fetchCat(value); // 실패하면 Form의 catch로
+    setMainCat(newCat);
+    setCounter((prev) => prev + 1);
+  }
+
+  function handleHeartClick() {
+    if (alreadyFavorite) return; // 중복 저장 → key 중복 방지
+    setFavorites((prev) => [...prev, mainCat]);
+  }
+
+  return (
+    <div>
+      <Title>{counterTitle}고양이 가라사대</Title>
+      <Form onSubmit={updateMainCat} />
+      <MainCard
+        img={mainCat}
+        onHeartClick={handleHeartClick}
+        alreadyFavorite={alreadyFavorite}
+      />
+      <Favorites favorites={favorites} />
+    </div>
+  );
+};
+</script></pre>
+        </figure>
+      </div>
+      <div class="right">
+        <div class="kicker">완성본 ⑦ · App (이벤트 · 조립)</div>
+        <h2>데이터는 <em>아래로</em>,<br />이벤트는 <em>위로</em></h2>
+        <div class="tree">
+          <div class="root"><b>App</b><span>state: counter · favorites · mainCat</span></div>
+          <div class="links"><span class="down">↓ props로 데이터</span><span class="up">↑ onSubmit · onHeartClick</span></div>
+          <div class="kids">
+            <div>Title</div>
+            <div>Form</div>
+            <div>MainCard</div>
+            <div>Favorites<small>└ CatItem × n</small></div>
+          </div>
+        </div>
+        <div class="gap"></div>
+        <ul class="pts">
+          <li><code class="i">await</code> 뒤의 counter는 오래됐을 수 있다 → <code class="i">prev</code>로 +1</li>
+          <li>이미 저장했으면 <code class="i">return</code>(가드) → 같은 고양이가 중복되지 않는다</li>
+        </ul>
+        <div class="callout">App은 조립만 한다: state를 쥐고, props로 내려보내고, onX로 올려받는다</div>
+      </div>
+    </section>
+
+    <!-- ================= 전체 정리 ================= -->
+    <section class="slide full">
+      <div>
+        <div class="summary-head">
+          <div class="kicker">전체 정리</div>
+          <h2>React 핵심, <em>한 줄씩</em></h2>
+        </div>
+        <div class="cards">
+          <div class="card">
+            <div class="tag">1 · 6단계</div>
+            <p>화면 = 컴포넌트(state, props)<span>DOM을 고치지 말고 state를 바꾸면 React가 다시 그린다</span></p>
+          </div>
+          <div class="card">
+            <div class="tag">2 · 3단계</div>
+            <p>컴포넌트와 JSX<span>props를 받아 JSX를 돌려주는 대문자 함수. { }엔 표현식</span></p>
+          </div>
+          <div class="card">
+            <div class="tag">6 · 9단계</div>
+            <p>단방향 데이터 흐름<span>데이터는 props로 아래로, 이벤트는 onX 콜백으로 위로</span></p>
+          </div>
+          <div class="card">
+            <div class="tag">7단계</div>
+            <p>불변성과 key<span>새로 만들어서 바꾸고, 목록엔 유일하고 안정적인 key</span></p>
+          </div>
+          <div class="card">
+            <div class="tag">8 · 11단계</div>
+            <p>제어 컴포넌트 · useEffect<span>입력은 value + onChange, 렌더링 밖의 일은 useEffect</span></p>
+          </div>
+          <div class="card q">
+            <div class="tag">12 · 13단계</div>
+            <p>계산할 수 있으면 state가 아니다<span>이전 값 의존 → 함수형 업데이트, 비싼 초기값 → 지연 초기화</span></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 복습 체크 ================= -->
+    <section class="slide full">
+      <div>
+        <div class="summary-head">
+          <div class="kicker">복습 포인트</div>
+          <h2>눈으로 보면 <em>맞아 보이는</em> 실수들</h2>
+        </div>
+        <div class="duo">
+          <div class="panel">
+            <div class="qlist">
+              <div><b>이벤트</b><span><code class="i">onClick={fn}</code>은 전달, <code class="i">onClick={fn()}</code>은 렌더링 중 호출</span></div>
+              <div><b>0 함정</b><span><code class="i">{list.length &amp;&amp; …}</code>는 0을 그린다 → <code class="i">length &gt; 0</code></span></div>
+              <div><b>함수형 업데이트</b><span><code class="i">setX(x + 1)</code> 두 번은 +1, <code class="i">prev</code> 두 번은 +2. await 뒤엔 항상 prev</span></div>
+              <div><b>정규식</b><span><code class="i">[ ]</code> 안의 <code class="i">|</code>는 파이프 문자 → 강의 코드라도 직접 입력해서 검증</span></div>
+              <div><b>순수성</b><span>업데이트 함수·컴포넌트 본문엔 부수 효과 X → 핸들러나 useEffect로 (StrictMode가 찾아내는 버그)</span></div>
+            </div>
+          </div>
+          <div class="panel blue">
+            <h3>다음 단계로 직접 해 볼 과제</h3>
+            <ol class="steps">
+              <li>즐겨찾기 삭제(토글) 기능<small>filter로 새 배열 만들기 (7단계)</small></li>
+              <li>고양이를 불러오는 동안 로딩 표시<small>isLoading state + 조건부 렌더링 (12단계)</small></li>
+              <li>Vite 프로젝트로 옮기기<small>api · utils · hooks · components로 나누기 (14단계)</small></li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="footer">
+      <span class="hint-key">← → 키로 이동 · F 전체 화면 · 상단 주제를 눌러 이동</span>
+      <span class="parts" id="parts"></span>
+      <div class="track">
+        <div class="bar" id="progress"></div>
+      </div>
+      <div class="nav">
+        <button type="button" class="press" id="prev" aria-label="이전 슬라이드">‹</button>
+        <span class="count" id="count"></span>
+        <button type="button" class="press" id="next" aria-label="다음 슬라이드">›</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ---------- 1. 코드 카드: 줄 번호 + 문법 색 (JSX 태그 포함) ----------
+    const RE = /(\/\/.*$|(?:^|\s)# .*$)|("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`)|\b(const|let|var|function|return|if|else|class|new|this|true|false|null|undefined|async|await|try|catch|throw|import|export|default|from)\b|(<\/?[A-Za-z][\w.]*)|\b(\d+(?:\.\d+)?)\b|([A-Za-z_$][\w$]*)(?=\s*\()/g;
+    const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+    function highlight(line) {
+      let out = "";
+      let last = 0;
+      line.replace(RE, (m, c, s, k, t, n, f, offset) => {
+        out += esc(line.slice(last, offset));
+        const cls = c ? "c" : s ? "s" : k ? "k" : t ? "t" : n ? "n" : "f";
+        out += `<span class="t-${cls}">${esc(m)}</span>`;
+        last = offset + m.length;
+        return m;
+      });
+      return out + esc(line.slice(last));
+    }
+
+    // 줄 번호 칸과 코드 칸을 나눠 두면, 폰에서 긴 줄이 번호 칸 아래로 파고들지 않고 줄바꿈된다
+    const lineHtml = (no, text, hl) =>
+      `<span class="ln${hl ? " hl" : ""}"><span class="no">${no}</span><span class="tx">${highlight(text) || " "}</span></span>`;
+
+    // 코드는 <script type="text/plain"> 안에 원문 그대로 두고, textContent로 꺼낸다
+    document.querySelectorAll("figure.code pre").forEach((pre) => {
+      const marked = new Set((pre.dataset.hl || "").split(",").filter(Boolean).map(Number));
+      const lines = pre.textContent.replace(/^\r?\n/, "").replace(/\s+$/, "").split("\n");
+      pre.innerHTML = "<code>" + lines.map((line, i) => lineHtml(i + 1, line, marked.has(i + 1))).join("") + "</code>";
+
+      // 폰의 설명 페이지 맨 위에 다시 보여 줄 "핵심 줄" (파란 줄만, 공통 들여쓰기 제거)
+      const right = pre.closest(".slide").querySelector(".right");
+      const picked = [...marked].sort((a, b) => a - b).filter((n) => lines[n - 1] !== undefined);
+      if (!right || picked.length === 0) return;
+      const indent = Math.min(...picked.map((n) => lines[n - 1].match(/^ */)[0].length));
+      const box = document.createElement("div");
+      box.className = "keylines";
+      box.innerHTML = `<div class="kl-label">핵심 줄</div>` +
+        picked.map((n) => lineHtml(n, lines[n - 1].slice(indent), false)).join("");
+      const kicker = right.querySelector(".kicker");
+      if (kicker) kicker.after(box);
+      else right.prepend(box);
+    });
+
+    // ---------- 2. 화면에 맞추기 ----------
+    let layout = applyLayout();
+    const isPhone = () => layout === "phone";
+
+    // 상자 안에 스크롤할 내용이 남아 있으면 아래쪽을 흐리게 해서 "더 있음"을 알린다
+    function updateMore(el) {
+      const more = el.classList.contains("scroll") && el.scrollTop + el.clientHeight < el.scrollHeight - 4;
+      el.classList.toggle("more", more);
+    }
+
+    // 코드 상자: 기준 크기에서 0.5px씩 줄이고, 최소 크기에서도 넘치면 상자 안 스크롤
+    function fitCodeBox(pre, base, min) {
+      pre.classList.remove("scroll", "more");
+      let size = base;
+      pre.style.fontSize = size + "px";
+      while (pre.scrollHeight > pre.clientHeight + 1 && size > min) {
+        size -= 0.5;
+        pre.style.fontSize = size + "px";
+      }
+      if (pre.scrollHeight > pre.clientHeight + 1) {
+        pre.classList.add("scroll");
+        pre.scrollTop = 0;
+      }
+      updateMore(pre);
+    }
+
+    // 설명 칸: 글자는 모두 em이라 칸의 font-size만 줄이면 전체가 같이 줄어든다.
+    // 최소 크기에서도 넘치면 beforeScroll(덜 중요한 것 접기)을 한 번 해 보고, 그래도 넘치면 칸 안 스크롤
+    function fitTextBox(pane, base, min, beforeScroll) {
+      pane.classList.remove("scroll", "more");
+      const overflows = () => pane.scrollHeight > pane.clientHeight + 1;
+      const shrink = () => {
+        let size = base;
+        pane.style.fontSize = size + "px";
+        while (overflows() && size > min) {
+          size -= 0.5;
+          pane.style.fontSize = size + "px";
+        }
+      };
+      shrink();
+      if (overflows() && beforeScroll && beforeScroll()) shrink();
+      if (overflows()) {
+        pane.classList.add("scroll");
+        pane.scrollTop = 0;
+      }
+      updateMore(pane);
+    }
+
+    // stage(PC): 코드가 카드보다 크면 글자 크기를 줄여 맞춤
+    function fitCode(slide) {
+      slide.querySelectorAll("figure.code pre").forEach((pre) => {
+        pre.classList.remove("scroll", "more");
+        let size = 21;
+        pre.style.fontSize = size + "px";
+        while ((pre.scrollWidth > pre.clientWidth + 1 || pre.scrollHeight > pre.clientHeight + 1) && size > 12) {
+          size -= 0.5;
+          pre.style.fontSize = size + "px";
+        }
+      });
+    }
+
+    // phone: 지금 보이는 페이지 하나만 맞춘다 (설명 14px · 전체 화면 장 13px · 코드 12px까지)
+    function fitPhone(pane) {
+      const pre = pane.querySelector("figure.code pre");
+      if (pre) {
+        fitCodeBox(pre, 13.5, 12);
+        return;
+      }
+      const full = Boolean(pane.closest(".slide.full"));
+      fitTextBox(pane, full ? 15 : 16, full ? 13 : 14, () => {
+        if (!pane.querySelector(".keylines")) return false;
+        pane.classList.add("kl-off"); // 바로 앞 코드 페이지에 있는 줄이므로 먼저 접는다
+        return true;
+      });
+    }
+
+    // tablet: 한 장의 칸을 모두 맞춘다
+    function fitTabletPanes(slide, left) {
+      if (left) {
+        const pre = left.querySelector("figure.code pre");
+        if (pre) fitCodeBox(pre, 15.5, 13);
+      }
+      panesOf.get(slide).filter((pane) => pane !== left).forEach((pane) => {
+        const full = Boolean(pane.closest(".slide.full"));
+        fitTextBox(pane, full ? 17 : 18, full ? 13 : 14.5);
+      });
+    }
+
+    // 위아래로 쌓을 때(세로 · Split View)는 코드 칸 높이를 몇 가지로 바꿔 보고,
+    // 코드와 설명 중 더 많이 줄어든 쪽이 가장 덜 줄어드는 높이를 고른다 (스크롤이 생기면 큰 감점)
+    function fitTablet(slide) {
+      const left = slide.querySelector(".left");
+      const stacked = document.documentElement.getAttribute("data-split") === "stack";
+      if (!left || !stacked) {
+        if (left) left.style.maxHeight = "";
+        fitTabletPanes(slide, left);
+        return;
+      }
+      const right = slide.querySelector(".right");
+      const pre = left.querySelector("figure.code pre");
+      const score = () => {
+        const codeRatio = parseFloat(pre.style.fontSize) / 15.5;
+        const textRatio = parseFloat(right.style.fontSize) / 18;
+        const scrolled = pre.classList.contains("scroll") || right.classList.contains("scroll");
+        return Math.min(codeRatio, textRatio) - (scrolled ? 1 : 0);
+      };
+      let best = null;
+      [0.4, 0.46, 0.52, 0.58, 0.66, 0.74].forEach((share) => {
+        left.style.maxHeight = Math.round(slide.clientHeight * share) + "px";
+        fitTabletPanes(slide, left);
+        const result = score();
+        if (!best || result > best.result) best = { share, result };
+      });
+      left.style.maxHeight = Math.round(slide.clientHeight * best.share) + "px";
+      fitTabletPanes(slide, left);
+    }
+
+    // ---------- 3. 슬라이드 · 페이지 ----------
+    const stage = document.getElementById("stage");
+    const slides = [...document.querySelectorAll(".slide")];
+    const TOPICS = [
+      ["basic", "기초·JSX"], ["comp", "컴포넌트·이벤트"], ["state", "state·리스트"],
+      ["form", "폼·코드 정리"], ["data", "저장·API"], ["deep", "조건부·setState"], ["final", "실무 완성본"],
+    ];
+    const topicsEl = document.getElementById("topics");
+    const partsEl = document.getElementById("parts");
+    topicsEl.innerHTML = TOPICS.map(([key, label]) => `<button type="button" data-key="${key}">${label}</button>`).join("");
+
+    // 한 장을 폰에서 몇 페이지로 나눌지: 코드|설명, 소개|목록, 나머지는 1페이지
+    const panesOf = new Map();
+    slides.forEach((slide) => {
+      const panes = slide.matches(".split")
+        ? [slide.querySelector(".left"), slide.querySelector(".right")]
+        : slide.matches(".cover")
+          ? [slide.querySelector(".hero"), slide.querySelector(".todo-card")]
+          : [slide.firstElementChild];
+      panes.forEach((pane) => {
+        pane.classList.add("pane");
+        pane.addEventListener("scroll", () => updateMore(pane), { passive: true });
+      });
+      panesOf.set(slide, panes);
+    });
+    document.querySelectorAll("figure.code pre").forEach((pre) => {
+      pre.addEventListener("scroll", () => updateMore(pre), { passive: true });
+    });
+
+    const paneLabel = (pane) =>
+      pane.classList.contains("left") ? "코드"
+        : pane.classList.contains("right") ? "설명"
+          : pane.classList.contains("hero") ? "소개"
+            : pane.classList.contains("todo-card") ? "목록" : "";
+
+    const pages = [];
+    slides.forEach((slide, si) => panesOf.get(slide).forEach((_, pi) => pages.push({ si, pi })));
+    const firstPageOf = (si) => pages.findIndex((pg) => pg.si === si);
+
+    let current = 0; // 지금 장 (stage · tablet의 이동 단위)
+    let page = 0;    // 지금 페이지 (phone의 이동 단위)
+
+    // 다른 화면 방식에서 남은 크기 · 상태를 지운다
+    function resetPanes(slide) {
+      panesOf.get(slide).forEach((pane) => {
+        pane.style.fontSize = "";
+        pane.style.maxHeight = "";
+        pane.classList.remove("scroll", "more", "kl-off");
+      });
+    }
+
+    function render() {
+      const slide = slides[current];
+      const panes = panesOf.get(slide);
+      const phone = isPhone();
+
+      slides.forEach((s) => s.classList.toggle("active", s === slide));
+      panes.forEach((pane, i) => pane.classList.toggle("on", phone && i === pages[page].pi));
+
+      const topic = slide.dataset.topic;
+      topicsEl.querySelectorAll("button").forEach((el) => {
+        const on = el.dataset.key === topic;
+        el.classList.toggle("on", on);
+        if (on && layout !== "stage") el.scrollIntoView({ block: "nearest", inline: "nearest" });
+      });
+
+      partsEl.innerHTML = phone && panes.length > 1
+        ? panes.map((pane, i) =>
+          `<button type="button" data-part="${i}" class="${i === pages[page].pi ? "on" : ""}">${paneLabel(pane)}</button>`).join("")
+        : "";
+
+      document.getElementById("count").innerHTML = `<b>${current + 1}</b> / ${slides.length}`;
+      const ratio = phone ? (page + 1) / pages.length : (current + 1) / slides.length;
+      document.getElementById("progress").style.width = `${ratio * 100}%`;
+      try { history.replaceState(null, "", "#" + (current + 1)); } catch (error) { /* 주소 변경이 막힌 환경 */ }
+
+      resetPanes(slide);
+      if (layout === "phone") fitPhone(panes[pages[page].pi]);
+      else if (layout === "tablet") fitTablet(slide);
+      else fitCode(slide);
+    }
+
+    // 장 단위 이동 (주제 버튼 · 로드맵 · 주소의 #번호): 폰에서는 그 장의 첫 페이지로
+    function show(index) {
+      current = Math.max(0, Math.min(slides.length - 1, index));
+      page = firstPageOf(current);
+      render();
+    }
+
+    function showPage(index) {
+      page = Math.max(0, Math.min(pages.length - 1, index));
+      current = pages[page].si;
+      render();
+    }
+
+    const step = (delta) => (isPhone() ? showPage(page + delta) : show(current + delta));
+
+    // 창 크기 · 방향이 바뀌면 화면 방식을 다시 고르고 다시 맞춘다
+    function relayout() {
+      const before = layout;
+      layout = applyLayout();
+      if (layout !== before) page = firstPageOf(current);
+      if (layout === "stage") {
+        const k = Math.min(innerWidth / 1600, innerHeight / 900);
+        stage.style.transform = `translate(-50%, -50%) scale(${k})`;
+      } else {
+        stage.style.transform = "";
+      }
+      render();
+    }
+
+    // 상단 주제 → 그 주제의 첫 장으로
+    topicsEl.addEventListener("click", (event) => {
+      const chip = event.target.closest("button[data-key]");
+      if (!chip) return;
+      const first = slides.findIndex((s) => s.dataset.topic === chip.dataset.key);
+      if (first >= 0) show(first);
+    });
+
+    // 하단 "코드 · 설명" 칩 → 같은 장의 그 페이지로 (폰)
+    partsEl.addEventListener("click", (event) => {
+      const chip = event.target.closest("button[data-part]");
+      if (chip) showPage(firstPageOf(current) + Number(chip.dataset.part));
+    });
+
+    // 로드맵 행 → 해당 단계로 (클릭 · Enter)
+    document.querySelectorAll("tr[data-go]").forEach((row) => {
+      const go = () => show(slides.indexOf(document.getElementById(row.dataset.go)));
+      row.addEventListener("click", go);
+      row.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") { event.preventDefault(); event.stopPropagation(); go(); }
+      });
+    });
+
+    // ---------- 4. 표지의 "오늘 배울 것" 체크 (이 브라우저에만 저장) ----------
+    const TODO_KEY = "cat-jjal-guide-done";
+    const todoItems = [...document.querySelectorAll("#todoList li")];
+
+    function readDone() {
+      try {
+        return JSON.parse(localStorage.getItem(TODO_KEY)) || [];
+      } catch (error) {
+        return [];
+      }
+    }
+
+    function renderTodo(done) {
+      todoItems.forEach((li) => li.classList.toggle("done", done.includes(li.dataset.key)));
+      document.getElementById("todoCount").textContent = `${todoItems.length}개 중 ${done.length}개 완료`;
+      document.getElementById("todoBar").style.width = `${(done.length / todoItems.length) * 100}%`;
+    }
+
+    function toggleTodo(li) {
+      const done = readDone();
+      const next = done.includes(li.dataset.key)
+        ? done.filter((key) => key !== li.dataset.key)
+        : [...done, li.dataset.key];
+      try { localStorage.setItem(TODO_KEY, JSON.stringify(next)); } catch (error) { /* 저장 불가 환경 */ }
+      renderTodo(next);
+    }
+
+    todoItems.forEach((li) => {
+      li.addEventListener("click", () => toggleTodo(li));
+      li.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") { event.preventDefault(); event.stopPropagation(); toggleTodo(li); }
+      });
+    });
+    renderTodo(readDone());
+
+    // ---------- 5. 키보드 · 버튼 · 스와이프 ----------
+    document.addEventListener("keydown", (event) => {
+      // 버튼 같은 조작 요소에서 누른 Enter · Space는 그 요소의 동작으로 남겨 둔다
+      if ((event.key === "Enter" || event.key === " ") && event.target.closest("button, a, [tabindex]")) return;
+      // 폰 · iPad에서는 위·아래 키와 Space를 칸 안 스크롤에 양보한다
+      const touchLayout = layout !== "stage";
+      const next = touchLayout ? ["ArrowRight", "PageDown"] : ["ArrowRight", "ArrowDown", "PageDown", " ", "Enter"];
+      const prev = touchLayout ? ["ArrowLeft", "PageUp"] : ["ArrowLeft", "ArrowUp", "PageUp", "Backspace"];
+      if (next.includes(event.key)) { event.preventDefault(); step(1); }
+      else if (prev.includes(event.key)) { event.preventDefault(); step(-1); }
+      else if (event.key === "Home") show(0);
+      else if (event.key === "End") show(slides.length - 1);
+      else if (event.key === "f" || event.key === "F") {
+        try {
+          const request = document.fullscreenElement
+            ? document.exitFullscreen()
+            : document.documentElement.requestFullscreen();
+          if (request && request.catch) request.catch(() => { /* 전체 화면을 지원하지 않는 환경 */ });
+        } catch (error) { /* 전체 화면을 지원하지 않는 환경 */ }
+      }
+    });
+    document.getElementById("prev").addEventListener("click", () => step(-1));
+    document.getElementById("next").addEventListener("click", () => step(1));
+
+    // 좌우 스와이프로 넘기기 (주제 칩 줄에서 시작한 손짓은 제외)
+    let touchStart = null;
+    stage.addEventListener("touchstart", (event) => {
+      const t = event.touches[0];
+      touchStart = event.touches.length === 1 && !event.target.closest(".topics")
+        ? { x: t.clientX, y: t.clientY }
+        : null;
+    }, { passive: true });
+    stage.addEventListener("touchend", (event) => {
+      if (!touchStart) return;
+      const t = event.changedTouches[0];
+      const dx = t.clientX - touchStart.x;
+      const dy = t.clientY - touchStart.y;
+      touchStart = null;
+      if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) step(dx < 0 ? 1 : -1);
+    }, { passive: true });
+
+    window.addEventListener("resize", relayout);
+
+    current = Math.max(0, Math.min(slides.length - 1, (parseInt(location.hash.slice(1), 10) || 1) - 1));
+    page = firstPageOf(current);
+    relayout();
+    document.fonts.ready.then(render);
+  </script>
+</body>
+
+</html>
